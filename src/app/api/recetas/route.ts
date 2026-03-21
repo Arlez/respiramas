@@ -35,6 +35,10 @@ export async function GET() {
   const alimentos = ALIMENTOS_RECOMENDADOS.map((a) => a.nombre).join(', ');
 
   try {
+    // Añadir timeout para evitar que la petición quede pendiente indefinidamente
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000); // 15s
+
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -45,14 +49,19 @@ export async function GET() {
         model: 'stepfun/step-3.5-flash:free',
         messages: [{ role: 'user', content: buildPrompt(alimentos) }],
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!res.ok) {
       const err = await res.text();
       return NextResponse.json({ error: `OpenRouter: ${err}` }, { status: res.status });
     }
 
-    const data = await res.json();
+    const data = await res.json().catch((e) => null);
+    if (!data || !data.choices || !data.choices[0] || !data.choices[0].message) {
+      return NextResponse.json({ error: 'Respuesta inesperada de OpenRouter' }, { status: 502 });
+    }
     const content: string = data.choices[0].message.content;
 
     // Extraer el JSON array de la respuesta (puede venir con markdown u otro texto)
