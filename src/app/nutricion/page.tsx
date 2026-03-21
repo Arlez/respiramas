@@ -132,15 +132,44 @@ export default function NutricionPage() {
   const [recetasHoy, setRecetasHoy] = useState<Receta[]>([]);
   const [cargandoRecetas, setCargandoRecetas] = useState(false);
   const [errorRecetas, setErrorRecetas] = useState<string | null>(null);
+  const [reasoningDetails, setReasoningDetails] = useState<any | null>(null);
+  const [showDebug, setShowDebug] = useState(false);
+  const [rawContent, setRawContent] = useState<string | null>(null);
 
   const cargarRecetas = useCallback(async () => {
     setCargandoRecetas(true);
     setErrorRecetas(null);
     try {
       const res = await fetch('/api/recetas');
-      if (!res.ok) throw new Error('No se pudieron cargar las recetas');
-      const data: Receta[] = await res.json();
-      setRecetasHoy(data);
+      if (!res.ok) {
+        const t = await res.text().catch(() => '');
+        throw new Error(t || 'No se pudieron cargar las recetas');
+      }
+      const data = await res.json();
+
+      // Soportar varios formatos:
+      // 1) array directo
+      // 2) { recetas, reasoning }
+      // 3) { raw, reasoning, note: 'json_parse_failed' }
+      if (Array.isArray(data)) {
+        setRecetasHoy(data);
+        setReasoningDetails(null);
+        setRawContent(null);
+      } else if (data && data.recetas) {
+        setRecetasHoy(data.recetas);
+        setReasoningDetails(data.reasoning ?? null);
+        setRawContent(null);
+      } else if (data && data.raw) {
+        setRecetasHoy([]);
+        setReasoningDetails(data.reasoning ?? null);
+        setRawContent(String(data.raw).slice(0, 200000));
+        setErrorRecetas('La IA devolvió JSON inválido — ver depuración');
+      } else {
+        setRecetasHoy([]);
+        setReasoningDetails(null);
+        setRawContent(null);
+        throw new Error('Formato inesperado de la respuesta de la IA');
+      }
     } catch (e) {
       setErrorRecetas(e instanceof Error ? e.message : 'Error desconocido');
     } finally {
@@ -314,6 +343,28 @@ export default function NutricionPage() {
                 Estas recetas son generadas por IA con criterios de salud. Consulte a su nutricionista antes de cambios importantes en su dieta.
               </p>
             </Card>
+
+            {reasoningDetails && (
+              <div className="mt-2">
+                <button
+                  onClick={() => setShowDebug(!showDebug)}
+                  className="w-full py-2 mb-2 font-semibold text-gray-700 border border-gray-300 rounded-xl"
+                >
+                  {showDebug ? 'Ocultar detalles IA' : 'Mostrar detalles IA (depuración)'}
+                </button>
+                {showDebug && (
+                  <Card color="white">
+                    <pre className="text-xs whitespace-pre-wrap max-h-64 overflow-auto">{JSON.stringify(reasoningDetails, null, 2)}</pre>
+                    {rawContent && (
+                      <>
+                        <h4 className="mt-3 font-medium">Respuesta cruda (fragmento):</h4>
+                        <pre className="text-xs whitespace-pre-wrap max-h-64 overflow-auto">{rawContent}</pre>
+                      </>
+                    )}
+                  </Card>
+                )}
+              </div>
+            )}
 
             <Button fullWidth variant="ghost" onClick={() => setSeccion('menu')}>
               ← Volver
