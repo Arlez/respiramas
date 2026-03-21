@@ -34,3 +34,19 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Configurar API keys localmente
+
+Para mantener tus claves seguras, guarda la API key de la IA en un archivo local no versionado.
+
+- Copia `.env.local.example` a `.env.local` y reemplaza el valor:
+
+```
+OPENAI_API_KEY=sk_your_real_key_here
+```
+
+- El proyecto ya ignora archivos `.env*`, por lo que `.env.local` no será subido al repositorio.
+- Usa la variable desde código server-side con `process.env.OPENAI_API_KEY`.
+
+Hay un helper de ejemplo en `src/lib/openai.ts` que lanza un error si la variable no está definida.
+

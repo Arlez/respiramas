@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Header from '@/components/Header';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { generarRecetasDiarias, ALIMENTOS_RECOMENDADOS, ALIMENTOS_EVITAR, type Receta, type AlimentoRecomendado, type AlimentoEvitar } from '@/lib/recipes-ai';
+import { ALIMENTOS_RECOMENDADOS, ALIMENTOS_EVITAR, type Receta, type AlimentoRecomendado, type AlimentoEvitar } from '@/lib/recipes-ai';
 
 type Seccion = 'menu' | 'alimentos' | 'recetas' | 'evitar';
 
@@ -129,7 +129,30 @@ function TarjetaReceta({ receta }: { receta: Receta }) {
 export default function NutricionPage() {
   const [seccion, setSeccion] = useState<Seccion>('menu');
   const [filtroSistema, setFiltroSistema] = useState<string | null>(null);
-  const recetasHoy = generarRecetasDiarias();
+  const [recetasHoy, setRecetasHoy] = useState<Receta[]>([]);
+  const [cargandoRecetas, setCargandoRecetas] = useState(false);
+  const [errorRecetas, setErrorRecetas] = useState<string | null>(null);
+
+  const cargarRecetas = useCallback(async () => {
+    setCargandoRecetas(true);
+    setErrorRecetas(null);
+    try {
+      const res = await fetch('/api/recetas');
+      if (!res.ok) throw new Error('No se pudieron cargar las recetas');
+      const data: Receta[] = await res.json();
+      setRecetasHoy(data);
+    } catch (e) {
+      setErrorRecetas(e instanceof Error ? e.message : 'Error desconocido');
+    } finally {
+      setCargandoRecetas(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (seccion === 'recetas' && recetasHoy.length === 0 && !cargandoRecetas) {
+      cargarRecetas();
+    }
+  }, [seccion, recetasHoy.length, cargandoRecetas, cargarRecetas]);
 
   const alimentosFiltrados = filtroSistema
     ? ALIMENTOS_RECOMENDADOS.filter((a) => a.sistemas.includes(filtroSistema as 'corazón' | 'pulmón' | 'riñón' | 'sangre'))
@@ -158,7 +181,7 @@ export default function NutricionPage() {
               👩‍🍳 Recetas del Día (IA)
             </Button>
             <p className="text-gray-500 text-center text-sm">
-              3 recetas generadas según su condición
+              9 recetas generadas por IA según su condición
             </p>
 
             <Button fullWidth variant="secondary" onClick={() => setSeccion('evitar')}>
@@ -235,21 +258,60 @@ export default function NutricionPage() {
 
         {seccion === 'recetas' && (
           <>
-            <Card icon="👩‍🍳" title="Recetas de hoy" color="green">
+            <Card icon="👩‍🍳" title="Recetas del día (IA)" color="green">
               <p className="text-gray-600">
-                3 recetas generadas automáticamente, adaptadas a su condición: baja en sal, rica en hierro, antiinflamatoria.
+                9 recetas generadas por IA, adaptadas a su condición: bajas en sal, ricas en hierro y antiinflamatorias.
               </p>
             </Card>
 
-            <div className="space-y-4">
-              {recetasHoy.map((receta) => (
-                <TarjetaReceta key={receta.id} receta={receta} />
-              ))}
-            </div>
+            {cargandoRecetas && (
+              <Card color="white">
+                <div className="flex items-center justify-center gap-3 py-6">
+                  <span className="text-3xl animate-spin">⌛</span>
+                  <p className="text-gray-600 text-lg">Generando recetas personalizadas...</p>
+                </div>
+              </Card>
+            )}
+
+            {errorRecetas && (
+              <Card color="red">
+                <p className="text-red-700 mb-3">⚠️ {errorRecetas}</p>
+                <button
+                  onClick={cargarRecetas}
+                  className="w-full py-2 font-semibold text-red-700 border border-red-400 rounded-xl"
+                >
+                  🔄 Reintentar
+                </button>
+              </Card>
+            )}
+
+            {!cargandoRecetas && !errorRecetas && (
+              <>
+                {(['desayuno', 'almuerzo', 'cena'] as const).map((cat) => {
+                  const recetasCat = recetasHoy.filter((r) => r.categoria === cat);
+                  return recetasCat.length > 0 ? (
+                    <div key={cat} className="space-y-3">
+                      <h2 className="text-xl font-bold text-gray-700 flex items-center gap-2 pt-2">
+                        {CATEGORIA_ICONOS[cat]} {CATEGORIA_NOMBRES[cat]}
+                      </h2>
+                      {recetasCat.map((receta) => (
+                        <TarjetaReceta key={receta.id} receta={receta} />
+                      ))}
+                    </div>
+                  ) : null;
+                })}
+
+                {recetasHoy.length > 0 && (
+                  <Button fullWidth variant="secondary" onClick={cargarRecetas}>
+                    🔄 Generar nuevas recetas
+                  </Button>
+                )}
+              </>
+            )}
 
             <Card icon="🤖" color="yellow">
               <p className="text-gray-700 text-sm">
-                Estas recetas son generadas automáticamente con criterios de salud. Consulte a su nutricionista antes de cambios importantes en su dieta.
+                Estas recetas son generadas por IA con criterios de salud. Consulte a su nutricionista antes de cambios importantes en su dieta.
               </p>
             </Card>
 
