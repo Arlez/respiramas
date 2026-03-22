@@ -1,0 +1,423 @@
+[
+  {
+    "id": "cen-01",
+    "nombre": "Crema de Zapallo Italiano y Albahaca",
+    "descripcion": "Cena ligera y cálida, muy baja en potasio y fácil de digerir antes de dormir.",
+    "ingredientes": ["1 zapallo italiano grande", "1/2 cebolla", "Hojas de albahaca fresca", "1 cdta aceite de oliva"],
+    "preparacion": [
+      "1. Pelar el zapallo italiano (quitar piel reduce potasio) y picar con la cebolla.",
+      "2. Cocinar al vapor o con poca agua hasta que estén muy blandos.",
+      "3. Licuar con la albahaca y el aceite de oliva hasta que sea una crema suave.",
+      "4. Servir tibia."
+    ],
+    "beneficio": "Mínimo esfuerzo digestivo, ideal para evitar fatiga respiratoria nocturna.",
+    "restricciones": ["Sin sal", "Bajo potasio"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-02",
+    "nombre": "Pescado Blanco al Vapor con Zanahorias",
+    "descripcion": "Proteína magra que no genera pesadez estomacal.",
+    "ingredientes": ["100g de merluza o reineta", "2 zanahorias en rodajas", "Jugo de limón", "Eneldo o perejil"],
+    "preparacion": [
+      "1. Cocinar el pescado y las zanahorias al vapor simultáneamente (12-15 min).",
+      "2. Aliñar con limón y hierbas frescas.",
+      "3. Servir sin acompañamientos pesados."
+    ],
+    "beneficio": "Alta biodisponibilidad de proteína con carga mineral mínima.",
+    "restricciones": ["Sin sal", "Bajo fósforo"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-03",
+    "nombre": "Claras Revueltas con Puntas de Espárragos",
+    "descripcion": "Cena proteica rápida. Los espárragos actúan como diurético natural suave.",
+    "ingredientes": ["3 claras de huevo", "5 espárragos (solo las puntas)", "Ajo picado", "1 rebanada pan sin sal"],
+    "preparacion": [
+      "1. Cocinar los espárragos al dente.",
+      "2. Saltear con ajo y mezclar con las claras hasta que cuajen.",
+      "3. Acompañar con la tostada sin sal."
+    ],
+    "beneficio": "Ayuda a la eliminación de líquidos sin sodio.",
+    "restricciones": ["Solo claras", "Sin sal"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-04",
+    "nombre": "Sopa de Sémola con Clara de Huevo",
+    "descripcion": "Un clásico chileno ('Sopa de enfermos') adaptado para ser nutritivo y seguro.",
+    "ingredientes": ["2 cdas de sémola", "1.5 tazas de caldo de verduras casero", "1 clara de huevo", "Cilantro"],
+    "preparacion": [
+      "1. Calentar el caldo (hecho de zanahoria, cebolla y apio, sin sal).",
+      "2. Agregar la sémola en forma de lluvia revolviendo 5 min.",
+      "3. Echar la clara de huevo cruda y revolver rápido para que se formen hilos de proteína.",
+      "4. Servir con cilantro."
+    ],
+    "beneficio": "Muy hidratante y fácil de tragar.",
+    "restricciones": ["Sin caldos químicos", "Sin sal"],
+    "tiempoPreparacion": "12 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-05",
+    "nombre": "Budín de Zanahoria al Horno",
+    "descripcion": "Aporta betacarotenos para la reparación de tejidos pulmonares.",
+    "ingredientes": ["2 zanahorias ralladas", "2 claras de huevo", "1 cda de harina de arroz", "Nuez moscada"],
+    "preparacion": [
+      "1. Mezclar la zanahoria rallada con las claras y la harina de arroz.",
+      "2. Condimentar con nuez moscada.",
+      "3. Llevar al horno en pocillos individuales por 20 min."
+    ],
+    "beneficio": "Protección alveolar y digestión lenta (saciedad).",
+    "restricciones": ["Bajo sodio", "Bajo potasio"],
+    "tiempoPreparacion": "30 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-06",
+    "nombre": "Pollo desmenuzado con Ensalada de Porotos Verdes",
+    "descripcion": "Cena fría, ideal si el paciente tiene fatiga por calor.",
+    "ingredientes": ["80g pechuga de pollo cocida", "1 taza porotos verdes", "Limón", "Aceite de maravilla"],
+    "preparacion": [
+      "1. Desmenuzar el pollo frío.",
+      "2. Mezclar con los porotos verdes ya cocidos.",
+      "3. Aliñar con abundante limón y aceite."
+    ],
+    "beneficio": "Vitamina C y proteína magra.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-07",
+    "nombre": "Arroz Blanco con Champiñones Salteados",
+    "descripcion": "Combinación simple y segura para el riñón.",
+    "ingredientes": ["1/2 taza arroz blanco cocido", "1/2 taza champiñones", "Ajo y perejil"],
+    "preparacion": [
+      "1. Saltear champiñones con ajo en poco aceite.",
+      "2. Incorporar el arroz ya cocido y calentar todo junto.",
+      "3. Finalizar con perejil fresco."
+    ],
+    "beneficio": "Bajo fósforo.",
+    "restricciones": ["Sin sal", "Bajo sodio"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-08",
+    "nombre": "Tortilla de Acelga (Solo Hojas)",
+    "descripcion": "Técnica de doble cocción para asegurar niveles bajos de potasio.",
+    "ingredientes": ["1 taza hojas de acelga", "2 claras de huevo", "Cebolla picada", "Pimienta"],
+    "preparacion": [
+      "1. Hervir acelga, botar el agua, volver a hervir y estrujar muy bien.",
+      "2. Mezclar con claras y cebolla salteada.",
+      "3. Cocinar en sartén antiadherente por ambos lados."
+    ],
+    "beneficio": "Hierro vegetal con seguridad renal.",
+    "restricciones": ["Doble cocción obligatoria", "Sin sal"],
+    "tiempoPreparacion": "25 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-09",
+    "nombre": "Pasta de Arroz con Salsa de Pimentón",
+    "descripcion": "La pasta de arroz es más ligera que la de trigo para la cena.",
+    "ingredientes": ["1 taza fideos de arroz", "1 pimentón rojo asado", "1 cdta aceite de oliva"],
+    "preparacion": [
+      "1. Licuar el pimentón asado (sin piel ni semillas) con aceite para hacer una crema.",
+      "2. Cocinar fideos de arroz en agua hirviendo (3 min).",
+      "3. Mezclar con la salsa tibia."
+    ],
+    "beneficio": "Alto contenido de antioxidantes.",
+    "restricciones": ["Bajo potasio", "Sin sal"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-10",
+    "nombre": "Papilla de Pollo y Verduras Blancas",
+    "descripcion": "Especial para días de mucha dificultad respiratoria (disnea).",
+    "ingredientes": ["80g pollo", "1/2 zapallo italiano pelado", "1 trozo pequeño de cebolla"],
+    "preparacion": [
+      "1. Cocinar todo junto en agua.",
+      "2. Licuar hasta obtener una textura de puré suave.",
+      "3. Consumir lentamente."
+    ],
+    "beneficio": "Gasto energético mínimo al comer.",
+    "restricciones": ["Bajo potasio", "Sin sal"],
+    "tiempoPreparacion": "25 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-11",
+    "nombre": "Tostadas con Ricotta y Cilantro",
+    "descripcion": "Cena rápida tipo 'Once' chilena saludable.",
+    "ingredientes": ["2 rebanadas pan sin sal", "2 cdas ricotta (baja en sodio)", "Cilantro picado"],
+    "preparacion": ["1. Tostar el pan.", "2. Mezclar ricotta con cilantro y untar."],
+    "beneficio": "Proteína láctea de bajo impacto renal.",
+    "restricciones": ["Pan sin sal", "Bajo sodio"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-12",
+    "nombre": "Pollo al Orégano con Pepino",
+    "descripcion": "Combinación fresca que ayuda a la hidratación.",
+    "ingredientes": ["100g pechuga de pollo", "1 pepino ensalada", "Orégano", "Limón"],
+    "preparacion": [
+      "1. Cocinar pollo a la plancha con mucho orégano.",
+      "2. Pelar el pepino, quitar semillas (reduce potasio) y picar.",
+      "3. Aliñar pepino con limón y servir con el pollo."
+    ],
+    "beneficio": "Hidratación segura.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-13",
+    "nombre": "Consomé de Pescado con Fideos Letras",
+    "descripcion": "Caldo suave y nutritivo.",
+    "ingredientes": ["100g pescado blanco", "1/4 taza fideos de sopa", "Perejil", "Zanahoria rallada"],
+    "preparacion": [
+      "1. Hervir agua con zanahoria y perejil.",
+      "2. Agregar fideos y pescado en cubos pequeños.",
+      "3. Cocinar 8 min y servir."
+    ],
+    "beneficio": "Fácil deglución.",
+    "restricciones": ["Sin sal", "Bajo fósforo"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-14",
+    "nombre": "Salteado de Tofu y Brócoli (Flores)",
+    "descripcion": "Proteína vegetal ligera para variar de la carne.",
+    "ingredientes": ["80g tofu firme", "1/2 taza flores de brócoli (cocidas)", "Jengibre rallado"],
+    "preparacion": [
+      "1. Hervir el brócoli y botar el agua.",
+      "2. Saltear tofu con jengibre y el brócoli cocido en aceite."
+    ],
+    "beneficio": "Antiinflamatorio natural.",
+    "restricciones": ["Doble cocción brócoli", "Sin sal"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-15",
+    "nombre": "Pan con Queso Crema y Arándanos",
+    "descripcion": "Cena dulce-salada para pacientes con poco apetito.",
+    "ingredientes": ["1/2 marraqueta sin sal", "1 cda queso crema light", "5 arándanos"],
+    "preparacion": ["1. Tostar pan.", "2. Untar queso crema y poner arándanos encima."],
+    "beneficio": "Aporte de energía rápida.",
+    "restricciones": ["Bajo sodio", "Pan sin sal"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-16",
+    "nombre": "Crema de Pimentón Asado",
+    "descripcion": "Muy rica en antioxidantes sin carga de potasio elevada.",
+    "ingredientes": ["2 pimentones rojos", "1/2 papa (remojada/hervida)", "Aceite de oliva"],
+    "preparacion": [
+      "1. Asar pimentones, pelar y quitar semillas.",
+      "2. Licuar con la papa cocida para dar consistencia.",
+      "3. Servir caliente."
+    ],
+    "beneficio": "Vitamina C y protección pulmonar.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "35 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-17",
+    "nombre": "Atún lavado con Galletas de Agua",
+    "descripcion": "Cena de emergencia rápida y segura.",
+    "ingredientes": ["1/2 lata atún al agua", "4 galletas de agua sin sal", "Gotas de limón"],
+    "preparacion": [
+      "1. Lavar el atún en colador con abundante agua.",
+      "2. Aliñar con limón y poner sobre galletas."
+    ],
+    "beneficio": "Proteína rápida.",
+    "restricciones": ["Lavar atún obligatoriamente", "Sin sal"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-18",
+    "nombre": "Quinoa con Verduras Blancas",
+    "descripcion": "Saciadora pero ligera.",
+    "ingredientes": ["1/2 taza quinoa cocida", "1/2 zapallo italiano", "Cebollín"],
+    "preparacion": [
+      "1. Saltear zapallito y cebollín.",
+      "2. Mezclar con la quinoa ya lista y calentar."
+    ],
+    "beneficio": "Proteína vegetal de calidad.",
+    "restricciones": ["Quinoa muy bien lavada", "Sin sal"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-19",
+    "nombre": "Sopa de Pollo y Estrellitas",
+    "descripcion": "Clásico para reconfortar el cuerpo.",
+    "ingredientes": ["80g pollo", "1/4 taza fideos estrellas", "Zanahoria", "Apio"],
+    "preparacion": [
+      "1. Hervir verduras y pollo.",
+      "2. Agregar fideos y cocinar hasta que estén blandos.",
+      "3. Servir caliente."
+    ],
+    "beneficio": "Hidratación y calor corporal.",
+    "restricciones": ["Sin sal", "Bajo potasio"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-20",
+    "nombre": "Pescado al Horno con Hierbas",
+    "descripcion": "Preparación simple que no ensucia sabores.",
+    "ingredientes": ["100g pescado blanco", "Tomillo y Laurel", "Rodajas de limón"],
+    "preparacion": [
+      "1. Poner pescado en fuente con hierbas y limón.",
+      "2. Hornear 15 min a 180°C."
+    ],
+    "beneficio": "Digestión impecable.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-21",
+    "nombre": "Omelette de Champiñones",
+    "descripcion": "Proteína de claras con sabor terroso.",
+    "ingredientes": ["3 claras de huevo", "3 champiñones laminados", "Ajo"],
+    "preparacion": [
+      "1. Saltear champiñones.",
+      "2. Agregar claras y doblar cuando cuaje."
+    ],
+    "beneficio": "Bajo fósforo.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-22",
+    "nombre": "Ensalada de Couscous y Pimentón",
+    "descripcion": "Muy bajo esfuerzo para el sistema digestivo.",
+    "ingredientes": ["1/2 taza couscous", "1/4 pimentón picado", "Aceite de oliva"],
+    "preparacion": [
+      "1. Hidratar couscous con agua caliente.",
+      "2. Mezclar con pimentón y aceite."
+    ],
+    "beneficio": "Energía liviana.",
+    "restricciones": ["Bajo potasio", "Sin sal"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-23",
+    "nombre": "Compota de Manzana Tibia con Avena",
+    "descripcion": "Cena tipo 'postre' para días de poco apetito.",
+    "ingredientes": ["1 manzana pelada", "2 cdas avena", "Canela"],
+    "preparacion": [
+      "1. Cocinar manzana en agua con canela.",
+      "2. Agregar avena al final para que espese el jugo."
+    ],
+    "beneficio": "Fibra soluble para el corazón.",
+    "restricciones": ["Bajo potasio"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-24",
+    "nombre": "Puré de Porotos Verdes y Claras",
+    "descripcion": "Textura suave y color nutritivo.",
+    "ingredientes": ["1 taza porotos verdes", "2 claras de huevo cocidas", "Aceite de oliva"],
+    "preparacion": [
+      "1. Cocinar porotos verdes y licuar con aceite.",
+      "2. Picar las claras y poner encima del puré."
+    ],
+    "beneficio": "Proteína y fibra sin carga mineral excesiva.",
+    "restricciones": ["Bajo potasio", "Sin sal"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-25",
+    "nombre": "Pan con Pasta de Berenjena (Babaganoush sin sal)",
+    "descripcion": "Sabor ahumado natural.",
+    "ingredientes": ["1/2 marraqueta sin sal", "1/2 berenjena asada", "Ajo"],
+    "preparacion": [
+      "1. Asar berenjena, sacar la carne y moler con ajo.",
+      "2. Untar en el pan tostado."
+    ],
+    "beneficio": "Antioxidantes potentes.",
+    "restricciones": ["Bajo sodio", "Sin sal"],
+    "tiempoPreparacion": "30 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-26",
+    "nombre": "Crema de Arroz con Pollo",
+    "descripcion": "Suavidad total para el estómago.",
+    "ingredientes": ["1/2 taza arroz muy cocido", "50g pollo", "Caldo de verduras casero"],
+    "preparacion": [
+      "1. Licuar arroz cocido con un poco de caldo y el pollo cocido.",
+      "2. Calentar y servir como una crema espesa."
+    ],
+    "beneficio": "Ideal para casos de fatiga extrema.",
+    "restricciones": ["Bajo fósforo", "Sin sal"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-27",
+    "nombre": "Pasta Fría con Perejil y Limón",
+    "descripcion": "Cena minimalista para limpieza renal.",
+    "ingredientes": ["1 taza fideos", "Mucho perejil picado", "Aceite de oliva", "Limón"],
+    "preparacion": ["1. Mezclar fideos cocidos con el resto de ingredientes."],
+    "beneficio": "El perejil ayuda a la función renal.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-28",
+    "nombre": "Huevo a la Copa (Solo Claras) con Pan",
+    "descripcion": "Cena rápida y tradicional.",
+    "ingredientes": ["2 claras (cocidas suaves)", "1/2 marraqueta sin sal"],
+    "preparacion": ["1. Cocinar claras y servir para untar el pan."],
+    "beneficio": "Bajo fósforo.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "8 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-29",
+    "nombre": "Sopa de Verduras Picadas (Minestrone Renal)",
+    "descripcion": "Muchas verduras pero con técnica de remojo.",
+    "ingredientes": ["Zanahoria, Zapallito, Apio", "1 cda de arroz", "Laurel"],
+    "preparacion": [
+      "1. Hervir verduras, descartar agua a mitad de camino.",
+      "2. Terminar cocción con agua nueva y laurel."
+    ],
+    "beneficio": "Multivitamínico natural.",
+    "restricciones": ["Doble cocción", "Sin sal"],
+    "tiempoPreparacion": "30 min",
+    "categoria": "cena"
+  },
+  {
+    "id": "cen-30",
+    "nombre": "Pan con Mantequilla de Almendras",
+    "descripcion": "Cena muy ligera para cuando no hay hambre.",
+    "ingredientes": ["1 rebanada pan sin sal", "1 cdta mantequilla de almendras natural"],
+    "preparacion": ["1. Tostar y untar."],
+    "beneficio": "Grasas buenas para el corazón.",
+    "restricciones": ["Sin sal", "Bajo fósforo"],
+    "tiempoPreparacion": "2 min",
+    "categoria": "cena"
+  }
+]

@@ -4,7 +4,7 @@
 import { initialMedications } from './initialMedications';
 
 const DB_NAME = 'vivir-mejor-db';
-const DB_VERSION = 2;
+const DB_VERSION = 4;
 
 export interface RegistroDiario {
   id?: number;
@@ -86,6 +86,21 @@ export function openDB(): Promise<IDBDatabase> {
         alertStore.createIndex('fecha', 'fecha', { unique: false });
         alertStore.createIndex('leida', 'leida', { unique: false });
       }
+
+        // Recetas generadas por IA (cache diario)
+        if (!db.objectStoreNames.contains('recetas_ia')) {
+          const recetasStore = db.createObjectStore('recetas_ia', { keyPath: 'id', autoIncrement: true });
+          recetasStore.createIndex('fecha', 'fecha', { unique: false });
+          recetasStore.createIndex('categoria', 'categoria', { unique: false });
+          recetasStore.createIndex('fecha_categoria', ['fecha', 'categoria'], { unique: false });
+        }
+
+        // Favoritas de recetas (clave: id de receta string)
+        if (!db.objectStoreNames.contains('recetas_fav')) {
+          const favStore = db.createObjectStore('recetas_fav', { keyPath: 'id' });
+          favStore.createIndex('categoria', 'categoria', { unique: false });
+          favStore.createIndex('addedAt', 'addedAt', { unique: false });
+        }
     };
 
     request.onsuccess = (event) => {
@@ -253,3 +268,110 @@ export async function sembrarMedicamentos(): Promise<void> {
     });
   }
 }
+
+// --- API de Recetas IA (cache local diario) ---
+
+export interface RecetasIARecord {
+  id?: number;
+  fecha: string; // YYYY-MM-DD
+  categoria: 'desayuno' | 'almuerzo' | 'cena';
+  recetas: unknown[];
+  timestamp: number;
+}
+
+export function guardarRecetasIA(fecha: string, categoria: 'desayuno' | 'almuerzo' | 'cena', recetas: unknown[]): Promise<number> {
+  return addRecord('recetas_ia', { fecha, categoria, recetas, timestamp: Date.now() });
+}
+
+export async function obtenerRecetasIA(fecha: string, categoria: 'desayuno' | 'almuerzo' | 'cena'): Promise<unknown[] | null> {
+  const encontrados = await getByIndex<RecetasIARecord>('recetas_ia', 'fecha_categoria', [fecha, categoria]);
+  if (!encontrados || encontrados.length === 0) return null;
+  // Devolver la entrada más reciente para esa fecha/categoría
+  const ordenado = encontrados.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  return ordenado[0].recetas ?? null;
+}
+
+export async function limpiarRecetasAntes(fechaLimite: string): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('recetas_ia', 'readwrite');
+    const store = tx.objectStore('recetas_ia');
+    const req = store.openCursor();
+    req.onsuccess = (ev) => {
+      const cursor = (ev.target as IDBRequest).result as IDBCursorWithValue | null;
+      if (cursor) {
+        const rec: RecetasIARecord = cursor.value;
+        if (rec.fecha < fechaLimite) {
+          cursor.delete();
+        }
+        cursor.continue();
+      } else {
+        resolve();
+      }
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function borrarRecetasFecha(fecha: string): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('recetas_ia', 'readwrite');
+    const store = tx.objectStore('recetas_ia');
+    const req = store.openCursor();
+    req.onsuccess = (ev) => {
+      const cursor = (ev.target as IDBRequest).result as IDBCursorWithValue | null;
+      if (cursor) {
+        const rec: RecetasIARecord = cursor.value;
+        if (rec.fecha === fecha) {
+          cursor.delete();
+        }
+        cursor.continue();
+      } else {
+        resolve();
+      }
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// --- Favoritas de Recetas ---
+
+export interface FavoritaRecord {
+  id: string; // usar id de la receta (ej. des-01)
+  categoria: 'desayuno' | 'almuerzo' | 'cena';
+  receta: unknown;
+  addedAt: number;
+}
+
+export function guardarFavorita(rec: FavoritaRecord): Promise<void> {
+  return updateRecord('recetas_fav', rec).catch(async (err) => {
+    // si falla (p.e. no existe), intentar add
+    const db = await openDB();
+    return new Promise<void>((resolve, reject) => {
+      const tx = db.transaction('recetas_fav', 'readwrite');
+      const store = tx.objectStore('recetas_fav');
+      const req = store.add(rec);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  });
+}
+
+export function eliminarFavorita(id: string): Promise<void> {
+  return deleteRecord('recetas_fav', id as any);
+}
+
+export function obtenerFavoritas(): Promise<FavoritaRecord[]> {
+  return getAllRecords('recetas_fav');
+}
+
+export function obtenerFavoritasPorCategoria(cat: 'desayuno' | 'almuerzo' | 'cena'): Promise<FavoritaRecord[]> {
+  return getByIndex<FavoritaRecord>('recetas_fav', 'categoria', cat);
+}
+
+export async function esFavorita(id: string): Promise<boolean> {
+  const all = await getAllRecords<FavoritaRecord>('recetas_fav');
+  return all.some((f) => f.id === id);
+}
+

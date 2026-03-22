@@ -1,0 +1,447 @@
+[
+  {
+    "id": "alm-01",
+    "nombre": "Charquicán de Pollo (Bajo Potasio)",
+    "descripcion": "Versión del clásico chileno. Las papas se remojan y hierven doblemente para ser seguras para el riñón.",
+    "ingredientes": ["100g pechuga de pollo", "1 papa pequeña (remojada y hervida)", "1/2 taza zapallo amarillo", "1/2 taza porotos verdes", "Orégano y comino"],
+    "preparacion": [
+      "1. Picar la papa y dejar en remojo 2 horas. Hervir en abundante agua y descartar el agua a mitad de cocción.",
+      "2. Saltear el pollo en cubos con ajo y orégano.",
+      "3. Agregar el zapallo y los porotos verdes. Cocinar hasta que estén blandos.",
+      "4. Mezclar con las papas y moler levemente."
+    ],
+    "beneficio": "Fibra soluble y proteína magra con carga mineral controlada.",
+    "restricciones": ["Doble cocción obligatoria", "Sin sal"],
+    "tiempoPreparacion": "40 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-02",
+    "nombre": "Reineta al Limón y Cilantro",
+    "descripcion": "Pescado blanco magro con alta disponibilidad de proteína y baja carga de fósforo.",
+    "ingredientes": ["120g filete de reineta", "Jugo de 1 limón", "Cilantro fresco picado", "1/2 taza arroz blanco cocido"],
+    "preparacion": [
+      "1. Cocinar la reineta a la plancha o al vapor con el jugo de limón y ajo.",
+      "2. Servir con cilantro fresco esparcido por encima.",
+      "3. Acompañar con el arroz blanco (preparado sin sal)."
+    ],
+    "beneficio": "Omega 3 para el corazón y fácil digestión para el pulmón.",
+    "restricciones": ["Sin sal", "Bajo fósforo"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-03",
+    "nombre": "Lentejas con Pimentón (Técnica de Lavado)",
+    "descripcion": "Aporte de hierro para la anemia. Requiere técnica estricta para reducir fósforo y potasio.",
+    "ingredientes": ["1/2 taza lentejas (remojadas 24h)", "1/2 pimentón rojo", "1/2 zanahoria", "Laurel"],
+    "preparacion": [
+      "1. Remojar lentejas 24h cambiando el agua 3 veces.",
+      "2. Hervir en agua nueva con laurel, descartar el agua al primer hervor y terminar con agua limpia.",
+      "3. Agregar pimentón y zanahoria picada para fijar el hierro con Vitamina C."
+    ],
+    "beneficio": "Hierro para combatir la anemia.",
+    "restricciones": ["Remojo prolongado", "Doble hervor"],
+    "tiempoPreparacion": "50 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-04",
+    "nombre": "Pollo a la Plancha con Puré de Zapallo",
+    "descripcion": "El zapallo camote es bajo en potasio y muy nutritivo.",
+    "ingredientes": ["100g pechuga de pollo", "1 taza zapallo camote", "Nuez moscada", "Aceite de oliva"],
+    "preparacion": [
+      "1. Cocinar el zapallo al vapor y moler hasta formar puré.",
+      "2. Condimentar el puré con nuez moscada y una gota de aceite de oliva.",
+      "3. Grillar el pollo con ajo y servir junto al puré."
+    ],
+    "beneficio": "Baja carga renal y alta palatabilidad.",
+    "restricciones": ["Bajo potasio", "Sin sal"],
+    "tiempoPreparacion": "25 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-05",
+    "nombre": "Tallarines con Salsa de Zanahoria y Albahaca",
+    "descripcion": "Alternativa a la salsa de tomate (que es más alta en potasio).",
+    "ingredientes": ["1 taza fideos (no integrales)", "2 zanahorias cocidas", "Albahaca fresca", "Ajo"],
+    "preparacion": [
+      "1. Licuar las zanahorias cocidas con un poco de su agua de cocción, albahaca y ajo.",
+      "2. Cocinar los fideos en abundante agua.",
+      "3. Mezclar los fideos con la salsa de zanahoria caliente."
+    ],
+    "beneficio": "Beta-carotenos para la salud alveolar (pulmón).",
+    "restricciones": ["Evitar fideos integrales (fósforo)", "Sin sal"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-06",
+    "nombre": "Cochayuyo con Arroz y Verduras",
+    "descripcion": "El cochayuyo aporta hierro y fibra. Debe lavarse bien para quitar la sal de mar natural.",
+    "ingredientes": ["1/2 taza cochayuyo picado", "1/2 taza arroz blanco", "Cebolla y pimentón", "Limón"],
+    "preparacion": [
+      "1. Hervir el cochayuyo 20 min y descartar el agua.",
+      "2. Saltear con cebolla y pimentón en aceite de oliva.",
+      "3. Mezclar con el arroz y añadir mucho limón."
+    ],
+    "beneficio": "Fibra soluble para el colesterol (corazón) y hierro.",
+    "restricciones": ["Lavar cochayuyo post-cocción", "Sin sal añadida"],
+    "tiempoPreparacion": "35 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-07",
+    "nombre": "Posta Rosada al Horno con Ensalada de Porotos Verdes",
+    "descripcion": "Carne roja magra una vez por semana para mantener niveles de hierro.",
+    "ingredientes": ["80g posta rosada", "1 taza porotos verdes cocidos", "Ajo y romero", "Aceite de maravilla"],
+    "preparacion": [
+      "1. Hornear la carne con ajo y romero para dar sabor sin sal.",
+      "2. Cocinar los porotos verdes al dente.",
+      "3. Servir la carne feteada con la ensalada aliñada con limón."
+    ],
+    "beneficio": "Hierro hemo de alta absorción.",
+    "restricciones": ["Porción limitada de carne roja", "Sin sal"],
+    "tiempoPreparacion": "45 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-08",
+    "nombre": "Tortilla de Zapallito Italiano al Horno",
+    "descripcion": "El zapallito es neutro y muy bajo en potasio.",
+    "ingredientes": ["1 zapallito italiano", "3 claras de huevo", "1/2 cebolla picada", "Orégano"],
+    "preparacion": [
+      "1. Rallar el zapallito y estrujar para quitar el exceso de agua.",
+      "2. Saltear con la cebolla.",
+      "3. Mezclar con las claras y llevar al horno en molde antiadherente por 20 min."
+    ],
+    "beneficio": "Bajo aporte de minerales, seguro para ERC 3b.",
+    "restricciones": ["Solo claras (bajo fósforo)", "Sin sal"],
+    "tiempoPreparacion": "35 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-09",
+    "nombre": "Caldillo de Pescado (Versión Liviana)",
+    "descripcion": "Sopa reconfortante que ayuda a la hidratación si no hay restricción severa de líquidos.",
+    "ingredientes": ["120g pescado blanco", "1 trozo pequeño de zapallo", "Cebolla", "Perejil y Laurel"],
+    "preparacion": [
+      "1. Hervir cebolla, zapallo y laurel.",
+      "2. Agregar el pescado al final para que no se desarme (10 min).",
+      "3. Servir con mucho perejil picado."
+    ],
+    "beneficio": "Fácil de comer, ideal para fatiga pulmonar.",
+    "restricciones": ["Sin caldos en cubo", "Sin sal"],
+    "tiempoPreparacion": "30 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-10",
+    "nombre": "Arroz con Pollo y Cúrcuma",
+    "descripcion": "La cúrcuma es un potente antiinflamatorio natural.",
+    "ingredients": ["100g pollo", "3/4 taza arroz", "1 cdta cúrcuma", "Arvejas (pocas)"],
+    "preparacion": [
+      "1. Sellar el pollo con cúrcuma y ajo.",
+      "2. Agregar el arroz y agua hirviendo.",
+      "3. Cocinar a fuego lento con las arvejas."
+    ],
+    "beneficio": "Antiinflamatorio pulmonar y cardiovascular.",
+    "restricciones": ["Controlar porción de arvejas (fósforo)", "Sin sal"],
+    "tiempoPreparacion": "25 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-11",
+    "nombre": "Budín de Acelga (Solo Hojas)",
+    "descripcion": "Uso de hojas de acelga con técnica de reducción de potasio.",
+    "ingredientes": ["1 taza acelga picada", "2 claras de huevo", "1/2 taza arroz cocido", "Nuez moscada"],
+    "preparacion": [
+      "1. Hervir acelga en mucha agua, escurrir y apretar bien.",
+      "2. Mezclar con claras, arroz y nuez moscada.",
+      "3. Hornear o cocinar en sartén tapado."
+    ],
+    "beneficio": "Aporte de Vitamina K controlada.",
+    "restricciones": ["Doble cocción acelga", "Sin sal"],
+    "tiempoPreparacion": "30 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-12",
+    "nombre": "Ensalada de Pasta Fría con Atún",
+    "descripcion": "Opción fresca para días de calor.",
+    "ingredientes": ["1 taza fideos fríos", "1 lata atún al agua (lavado)", "Pimentón rojo", "Aceite de oliva"],
+    "preparacion": [
+      "1. Enjuagar el atún bajo el chorro de agua por 1 min.",
+      "2. Mezclar con los fideos, pimentón picado y aceite de oliva."
+    ],
+    "beneficio": "Proteína rápida con sodio eliminado.",
+    "restricciones": ["Lavar atún obligatoriamente", "Sin sal"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-13",
+    "nombre": "Guiso de Zapallo con Choclo (Limitado)",
+    "descripcion": "El choclo debe ser moderado por su contenido de fósforo.",
+    "ingredientes": ["1.5 tazas zapallo amarillo", "1/4 taza choclo", "Albahaca", "Cebolla"],
+    "preparacion": [
+      "1. Cocinar el zapallo con la cebolla y albahaca hasta que esté cremoso.",
+      "2. Agregar el choclo y cocinar 5 min más.",
+      "3. Servir solo o con una clara de huevo encima."
+    ],
+    "beneficio": "Bajo potasio y muy digestivo.",
+    "restricciones": ["Poco choclo", "Sin sal"],
+    "tiempoPreparacion": "25 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-14",
+    "nombre": "Pechuga de Pollo al Jugo con Zanahoria",
+    "descripcion": "Preparación húmeda que ayuda si hay sequedad bucal.",
+    "ingredientes": ["100g pollo", "2 zanahorias en rodajas", "Cebolla", "Caldo de verduras casero"],
+    "preparacion": [
+      "1. Dorar pollo con cebolla.",
+      "2. Agregar zanahorias y un poco de agua o caldo natural (hecho solo con verduras).",
+      "3. Cocinar tapado a fuego bajo."
+    ],
+    "beneficio": "Proteína magra, hidratante.",
+    "restricciones": ["Sin caldos comprados", "Sin sal"],
+    "tiempoPreparacion": "30 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-15",
+    "nombre": "Pescado al Papillot",
+    "descripcion": "Cocción en su propio jugo para mantener nutrientes sin grasas.",
+    "ingredientes": ["120g pescado blanco", "Rodajas de limón", "Pimentón verde", "Zanahoria"],
+    "preparacion": [
+      "1. Envolver el pescado y verduras en papel aluminio o manteca.",
+      "2. Hornear 15-20 min.",
+      "3. Abrir con cuidado y servir."
+    ],
+    "beneficio": "Mínima pérdida de vitaminas.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "25 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-16",
+    "nombre": "Hummus de Garbanzos (Casero y Remojado)",
+    "descripcion": "Legumbre procesada para mejor digestión.",
+    "ingredientes": ["1/2 taza garbanzos cocidos (doble cocción)", "Aceite de oliva", "Limón", "Ajo"],
+    "preparacion": [
+      "1. Licuar garbanzos con limón, aceite y ajo hasta que sea puré.",
+      "2. Servir con bastones de zanahoria o pan sin sal."
+    ],
+    "beneficio": "Hierro y grasas buenas.",
+    "restricciones": ["Técnica de reducción de fósforo", "Sin sal"],
+    "tiempoPreparacion": "15 min (con garbanzos listos)",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-17",
+    "nombre": "Polenta con Salsa de Albahaca",
+    "descripcion": "La polenta es un cereal seguro y bajo en minerales.",
+    "ingredientes": ["1/2 taza polenta", "1.5 tazas agua", "Albahaca", "Aceite de oliva"],
+    "preparacion": [
+      "1. Cocinar polenta en agua hirviendo revolviendo 5 min.",
+      "2. Servir con una salsa de albahaca y aceite de oliva procesados."
+    ],
+    "beneficio": "Energía de fácil asimilación.",
+    "restricciones": ["Bajo fósforo", "Sin sal"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-18",
+    "nombre": "Ensalada de Couscous con Pepino",
+    "descripcion": "Cereal mediterráneo muy ligero.",
+    "ingredientes": ["1/2 taza couscous", "1/2 pepino picado", "Limón", "Menta fresca"],
+    "preparacion": [
+      "1. Hidratar couscous en agua caliente.",
+      "2. Mezclar con pepino (sin semillas), menta y mucho limón."
+    ],
+    "beneficio": "Refrescante, bajo en potasio.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-19",
+    "nombre": "Hamburguesas de Pollo Caseras",
+    "descripcion": "Evita las compradas que tienen mucho sodio.",
+    "ingredientes": ["100g pollo molido", "1 clara de huevo", "Avena para dar consistencia", "Perejil"],
+    "preparacion": [
+      "1. Mezclar pollo, clara, avena y perejil.",
+      "2. Formar hamburguesas y cocinar a la plancha con poco aceite."
+    ],
+    "beneficio": "Proteína segura controlada.",
+    "restricciones": ["Sin sal", "Sin aditivos"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-20",
+    "nombre": "Cebiche de Reineta (Estilo Saludable)",
+    "descripcion": "Proteína cruda (solo si el pescado es fresco y confiable).",
+    "ingredientes": ["120g reineta en cubos", "Jugo de 3 limones", "Cebolla morada (lavada)", "Cilantro"],
+    "preparacion": [
+      "1. Marinar pescado en limón 10 min.",
+      "2. Agregar cebolla previamente amortiguada en agua.",
+      "3. Servir frío con cilantro."
+    ],
+    "beneficio": "Cero grasas saturadas, alto hierro.",
+    "restricciones": ["Asegurar frescura", "Sin sal"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-21",
+    "nombre": "Guiso de Trigo Mote con Verduras",
+    "descripcion": "El mote es un cereal chileno muy nutritivo.",
+    "ingredientes": ["1/2 taza trigo mote cocido", "Zapallito italiano", "Pimentón", "Cebollín"],
+    "preparacion": [
+      "1. Saltear verduras.",
+      "2. Agregar el mote y un poco de agua.",
+      "3. Cocinar hasta que todo esté integrado."
+    ],
+    "beneficio": "Fibra y energía duradera.",
+    "restricciones": ["Bajo potasio", "Sin sal"],
+    "tiempoPreparacion": "30 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-22",
+    "nombre": "Congrio al Horno con Papas (Doble Cocción)",
+    "descripcion": "Pescado semigraso muy apreciado en Chile.",
+    "ingredientes": ["100g congrio", "1 papa", "Orégano", "Limón"],
+    "preparacion": [
+      "1. Preparar la papa con técnica de remojo y doble hervor.",
+      "2. Hornear el congrio con orégano y limón.",
+      "3. Servir porción moderada."
+    ],
+    "beneficio": "Fósforo moderado, rico en vitaminas.",
+    "restricciones": ["Control de porción", "Sin sal"],
+    "tiempoPreparacion": "40 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-23",
+    "nombre": "Carbonada de Pollo (Sin Caldo Artificial)",
+    "descripcion": "Sopa con trozos de verdura y carne.",
+    "ingredientes": ["80g pollo", "Papa (doble cocción)", "Zanahoria", "Arvejas (mínimo)"],
+    "preparacion": [
+      "1. Picar todo en cubos pequeños.",
+      "2. Cocinar en agua con laurel y comino.",
+      "3. Servir caliente."
+    ],
+    "beneficio": "Completo y reconfortante.",
+    "restricciones": ["Sin sal", "Control de arvejas"],
+    "tiempoPreparacion": "35 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-24",
+    "nombre": "Tortilla de Porotos Verdes",
+    "descripcion": "Ligera y segura para el riñón.",
+    "ingredientes": ["1.5 tazas porotos verdes", "3 claras de huevo", "Ajo", "Aceite"],
+    "preparacion": [
+      "1. Cocinar porotos verdes al vapor.",
+      "2. Mezclar con claras y ajo.",
+      "3. Cuajar en sartén antiadherente."
+    ],
+    "beneficio": "Baja carga mineral.",
+    "restricciones": ["Solo claras", "Sin sal"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-25",
+    "nombre": "Pavo con Arroz a la Valenciana (Sin Sal)",
+    "descripcion": "Usa pimentón para dar color y sabor.",
+    "ingredientes": ["100g pechuga pavo", "3/4 taza arroz", "Pimentón dulce en polvo", "Judías verdes"],
+    "preparacion": [
+      "1. Sellar pavo con pimentón.",
+      "2. Cocinar el arroz con el pavo y verduras.",
+      "3. Servir con un toque de limón."
+    ],
+    "beneficio": "Proteína muy magra.",
+    "restricciones": ["Bajo sodio", "Sin sal"],
+    "tiempoPreparacion": "30 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-26",
+    "nombre": "Fettuccine con Champiñones y Crema de Leche de Arroz",
+    "descripcion": "Versión sin lácteos para cuidar el fósforo.",
+    "ingredientes": ["1 taza pasta", "1/2 taza champiñones", "1/4 taza leche de arroz", "Ajo"],
+    "preparacion": [
+      "1. Saltear champiñones.",
+      "2. Agregar leche de arroz y dejar reducir.",
+      "3. Mezclar con la pasta cocida."
+    ],
+    "beneficio": "Energía deliciosa con bajo fósforo.",
+    "restricciones": ["Sin lácteos de vaca", "Sin sal"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-27",
+    "nombre": "Posta Negra con Ensalada de Zanahoria Rallada",
+    "descripcion": "Carne roja muy magra para la sangre.",
+    "ingredientes": ["80g posta negra", "1 taza zanahoria rallada", "Limón", "Aceite"],
+    "preparacion": [
+      "1. Cocinar carne a la plancha.",
+      "2. Aliñar zanahoria con mucho limón (ayuda a la anemia)."
+    ],
+    "beneficio": "Combinación clave para glóbulos rojos.",
+    "restricciones": ["Carne limitada", "Sin sal"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-28",
+    "nombre": "Cazuela de Pollo (Sin Papa / Con Arroz)",
+    "descripcion": "Versión modificada para reducir potasio.",
+    "ingredientes": ["1 presa pollo chica (sin piel)", "Zapallo", "Arroz", "Choclo (un trozo pequeño)"],
+    "preparacion": [
+      "1. Hervir pollo y zapallo.",
+      "2. Agregar arroz para que se cocine en el caldo.",
+      "3. Servir con cilantro fresco."
+    ],
+    "beneficio": "Tradición segura.",
+    "restricciones": ["Sin sal", "Control de potasio"],
+    "tiempoPreparacion": "45 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-29",
+    "nombre": "Pescado Frito al Horno (Con Avena)",
+    "descripcion": "Textura crocante sin la grasa de la fritura.",
+    "ingredientes": ["120g pescado blanco", "Avena instantánea (molida)", "Orégano"],
+    "preparacion": [
+      "1. Pasar el pescado por claras de huevo y luego por avena.",
+      "2. Hornear a fuego alto hasta que dore.",
+      "3. Servir con ensalada verde."
+    ],
+    "beneficio": "Bajo en grasas saturadas.",
+    "restricciones": ["Sin fritura real", "Sin sal"],
+    "tiempoPreparacion": "25 min",
+    "categoria": "almuerzo"
+  },
+  {
+    "id": "alm-30",
+    "nombre": "Guiso de Acelga y Arroz",
+    "descripcion": "Plato suave y económico.",
+    "ingredientes": ["1 taza acelga cocida", "1/2 taza arroz", "Cebolla", "Clara de huevo"],
+    "preparacion": [
+      "1. Hervir acelga y descartar agua.",
+      "2. Mezclar con arroz cocido y cebolla salteada.",
+      "3. Cuajar con una clara de huevo al final."
+    ],
+    "beneficio": "Baja carga mineral.",
+    "restricciones": ["Doble cocción verdura", "Sin sal"],
+    "tiempoPreparacion": "25 min",
+    "categoria": "almuerzo"
+  }
+]

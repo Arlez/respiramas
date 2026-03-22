@@ -1,0 +1,409 @@
+[
+  {
+    "id": "des-01",
+    "nombre": "Marraqueta con Huevo Revuelto (Solo Claras)",
+    "descripcion": "Clásico desayuno chileno adaptado. Las claras aportan proteína de alta calidad sin el fósforo de la yema, ideal para el riñón.",
+    "ingredientes": ["1/2 marraqueta sin sal tostada", "3 claras de huevo", "1 cdta de aceite de oliva", "Orégano"],
+    "preparacion": [
+      "1. Batir las claras con una pizca de orégano.",
+      "2. Cocinar en sartén antiadherente con el aceite de oliva hasta que cuajen.",
+      "3. Tostar la marraqueta (asegurar que sea sin sal de panadería).",
+      "4. Servir el huevo sobre el pan caliente."
+    ],
+    "beneficio": "Proteína pura sin fósforo, protege la función renal.",
+    "restricciones": ["Sin sal", "Bajo fósforo"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-02",
+    "nombre": "Avena Cremosa con Arándanos",
+    "descripcion": "Avena preparada con agua, rica en fibra para la salud del corazón y antioxidantes para los pulmones.",
+    "ingredientes": ["1/2 taza de avena integral", "1 taza de agua", "1/2 taza de arándanos frescos", "Canela en polvo"],
+    "preparacion": [
+      "1. Cocinar la avena con el agua a fuego medio hasta que espese.",
+      "2. Endulzar con canela al gusto.",
+      "3. Retirar del fuego y añadir los arándanos frescos encima."
+    ],
+    "beneficio": "Baja en potasio y rica en antocianinas protectoras.",
+    "restricciones": ["Bajo potasio", "Bajo sodio"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-03",
+    "nombre": "Pan con Palta Limitada y Tomate",
+    "descripcion": "Aporte de grasas saludables. Se limita la palta por su alto contenido de potasio en pacientes renales.",
+    "ingredientes": ["1/2 marraqueta sin sal", "2 cdas de palta (30g max)", "2 rodajas de tomate pelado", "Aceite de oliva"],
+    "preparacion": [
+      "1. Moler la palta y extender en el pan.",
+      "2. Poner las rodajas de tomate (sin piel para reducir potasio) encima.",
+      "3. Añadir un hilo de aceite de oliva."
+    ],
+    "beneficio": "Grasas monoinsaturadas que protegen las arterias coronarias.",
+    "restricciones": ["Potasio controlado", "Sin sal"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-04",
+    "nombre": "Yogurt de Pajaritos (Kéfir) con Pera",
+    "descripcion": "Probióticos para la salud general, usando pera que es la fruta más segura para el riñón.",
+    "ingredientes": ["150ml de yogurt natural sin azúcar", "1 pera pequeña pelada y picada", "1 cdta de semillas de chía (remojadas)"],
+    "preparacion": [
+      "1. Colocar el yogurt en un bol.",
+      "2. Picar la pera en cubitos y mezclar.",
+      "3. Añadir la chía previamente hidratada."
+    ],
+    "beneficio": "Baja carga ácida y bajo potasio.",
+    "restricciones": ["Bajo fósforo", "Bajo potasio"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-05",
+    "nombre": "Pan con Quesillo bajo en Sodio y Albahaca",
+    "descripcion": "Proteína ligera. El quesillo debe ser artesanal sin sal o enjuagado en agua.",
+    "ingredientes": ["1/2 marraqueta sin sal", "2 láminas de quesillo (60g)", "Hojas de albahaca fresca", "Pimienta negra"],
+    "preparacion": [
+      "1. Enjuagar el quesillo en agua fría para retirar exceso de sodio.",
+      "2. Poner sobre el pan tostado.",
+      "3. Decorar con albahaca y pimienta."
+    ],
+    "beneficio": "Calcio con baja carga de sodio para la presión arterial.",
+    "restricciones": ["Sin sal", "Bajo sodio"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-06",
+    "nombre": "Omelette de Pimentón y Cebollín",
+    "descripcion": "Sabor intenso sin necesidad de sal gracias al sofrito de verduras.",
+    "ingredientes": ["2 claras de huevo", "1/4 pimentón rojo picado", "Cebollín parte verde", "1/2 marraqueta sin sal"],
+    "preparacion": [
+      "1. Saltear el pimentón y el cebollín en aceite de oliva.",
+      "2. Añadir las claras batidas y cocinar por ambos lados.",
+      "3. Acompañar con el pan."
+    ],
+    "beneficio": "Vitamina C para la anemia y salud pulmonar.",
+    "restricciones": ["Sin sal", "Bajo potasio"],
+    "tiempoPreparacion": "12 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-07",
+    "nombre": "Batido de Manzana y Canela",
+    "descripcion": "Opción rápida y líquida para días con poca energía (disnea por fibrosis).",
+    "ingredientes": ["1 manzana pelada", "1/2 taza de agua", "1 cda de avena", "Canela"],
+    "preparacion": [
+      "1. Licuar todos los ingredientes hasta que no queden grumos.",
+      "2. Beber de inmediato para aprovechar la fibra."
+    ],
+    "beneficio": "Fácil digestión, no agota al paciente al comer.",
+    "restricciones": ["Bajo potasio", "Líquido controlado"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-08",
+    "nombre": "Tostadas con Ricotta y Mermelada Sin Azúcar",
+    "descripcion": "Sabor dulce controlado para el ánimo del paciente.",
+    "ingredientes": ["1 rebanada de pan de molde sin sal", "1 cda de ricotta", "1 cdta de mermelada de frambuesa sin azúcar"],
+    "preparacion": [
+      "1. Tostar el pan.",
+      "2. Untar la ricotta y la mermelada.",
+      "3. Servir con un té de hierbas."
+    ],
+    "beneficio": "Bajo en sodio, energía rápida.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-09",
+    "nombre": "Arroz con Leche (Leche de Arroz)",
+    "descripcion": "Alternativa sin lácteos para reducir fósforo al máximo.",
+    "ingredientes": ["1/2 taza de arroz blanco cocido", "1/2 taza de leche de arroz", "Cáscara de limón", "Canela"],
+    "preparacion": [
+      "1. Calentar el arroz ya cocido con la leche de arroz, limón y canela.",
+      "2. Dejar que se absorba el líquido a fuego lento.",
+      "3. Servir tibio."
+    ],
+    "beneficio": "Mínima carga renal de fósforo.",
+    "restricciones": ["Bajo fósforo", "Renal estricto"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-10",
+    "nombre": "Pan con Pollo Desmenuzado",
+    "descripcion": "Proteína magra remanente de la cena anterior, muy segura.",
+    "ingredientes": ["1/2 marraqueta sin sal", "50g de pechuga de pollo cocida", "1 cdta de mayonesa casera (sin sal)"],
+    "preparacion": [
+      "1. Desmenuzar el pollo.",
+      "2. Mezclar con la mayonesa mínima.",
+      "3. Rellenar el pan tostado."
+    ],
+    "beneficio": "Proteína de fácil absorción.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-11",
+    "nombre": "Semola con Leche (Leche baja en fósforo)",
+    "descripcion": "Postre tradicional chileno usado como desayuno nutritivo.",
+    "ingredientes": ["2 cdas de sémola", "1 taza de agua o leche de almendras", "Vainilla"],
+    "preparacion": [
+      "1. Hervir el líquido con vainilla.",
+      "2. Añadir sémola en forma de lluvia revolviendo siempre.",
+      "3. Dejar enfriar un poco."
+    ],
+    "beneficio": "Energía suave para el pulmón.",
+    "restricciones": ["Bajo fósforo"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-12",
+    "nombre": "Huevo a la Copa (Sin Yema)",
+    "descripcion": "Para pacientes que extrañan la textura del huevo blando.",
+    "ingredientes": ["2 claras de huevo (cocidas al vapor)", "Soldaditos de marraqueta sin sal"],
+    "preparacion": [
+      "1. Cocinar las claras en un molde pequeño al vapor.",
+      "2. Untar el pan en la clara cuajada blanda."
+    ],
+    "beneficio": "Bajo fósforo.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "8 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-13",
+    "nombre": "Compota de Pera y Manzana",
+    "descripcion": "Fruta cocida que es más fácil de digerir y reduce trazas de potasio.",
+    "ingredientes": ["1/2 manzana", "1/2 pera", "Clavo de olor", "Agua"],
+    "preparacion": [
+      "1. Hervir las frutas peladas en agua con clavo de olor hasta que estén blandas.",
+      "2. Descartar el agua (para reducir potasio).",
+      "3. Moler y servir."
+    ],
+    "beneficio": "Potasio mínimo, alta digestibilidad.",
+    "restricciones": ["Bajo potasio"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-14",
+    "nombre": "Pan con Champiñones al Ajillo",
+    "descripcion": "Sabor terroso para variar de los huevos.",
+    "ingredientes": ["1/2 marraqueta sin sal", "1/2 taza de champiñones laminados", "Ajo picado", "Perejil"],
+    "preparacion": [
+      "1. Saltear champiñones con ajo en aceite de oliva.",
+      "2. Añadir perejil al final.",
+      "3. Poner sobre el pan."
+    ],
+    "beneficio": "Antioxidantes naturales.",
+    "restricciones": ["Bajo sodio"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-15",
+    "nombre": "Galletas de Arroz con Mantequilla de Almendras",
+    "descripcion": "Snack rápido de desayuno.",
+    "ingredientes": ["2 galletas de arroz sin sal", "1 cdta de mantequilla de almendras (natural)"],
+    "preparacion": ["1. Untar y servir."],
+    "beneficio": "Grasas cardiosaludables.",
+    "restricciones": ["Bajo fósforo"],
+    "tiempoPreparacion": "2 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-16",
+    "nombre": "Porridge de Quinoa",
+    "descripcion": "Superalimento andino lavado 7 veces para eliminar saponinas.",
+    "ingredientes": ["1/2 taza de quinoa lavada", "1 taza de agua", "Miel (mínima)"],
+    "preparacion": [
+      "1. Cocinar la quinoa en agua.",
+      "2. Cuando esté blanda, añadir un toque de miel y canela."
+    ],
+    "beneficio": "Proteína vegetal completa.",
+    "restricciones": ["Lavar muy bien la quinoa"],
+    "tiempoPreparacion": "20 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-17",
+    "nombre": "Pan con Mermelada de Membrillo",
+    "descripcion": "Sabor típico chileno muy bajo en potasio.",
+    "ingredientes": ["1/2 marraqueta sin sal", "1 cda de dulce de membrillo"],
+    "preparacion": ["1. Tostar pan y aplicar membrillo."],
+    "beneficio": "Astringente y seguro para el riñón.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "3 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-18",
+    "nombre": "Claras con Espinaca Cocida",
+    "descripcion": "Hierro para la anemia, pero espinaca siempre cocida y escurrida.",
+    "ingredientes": ["2 claras de huevo", "1/4 taza de espinaca (hervida y escurrida)", "Ajo"],
+    "preparacion": [
+      "1. Hervir espinaca, escurrir bien el agua (elimina potasio).",
+      "2. Mezclar con claras y cocinar."
+    ],
+    "beneficio": "Hierro no hemo con seguridad renal.",
+    "restricciones": ["Doble cocción verdura"],
+    "tiempoPreparacion": "12 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-19",
+    "nombre": "Farinata de Garbanzos (Pequeña)",
+    "descripcion": "Pan de legumbre rico en hierro.",
+    "ingredientes": ["2 cdas de harina de garbanzo", "Agua", "Romero"],
+    "preparacion": [
+      "1. Mezclar harina y agua hasta hacer una pasta.",
+      "2. Cocinar en sartén como un pancake.",
+      "3. Añadir romero."
+    ],
+    "beneficio": "Combate la anemia.",
+    "restricciones": ["Fósforo moderado"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-20",
+    "nombre": "Té de Hierbas con Tostadas de Agua",
+    "descripcion": "Desayuno liviano para días de malestar estomacal.",
+    "ingredientes": ["Té de menta o manzanilla", "2 tostadas de agua sin sal", "Aceite de oliva"],
+    "preparacion": ["1. Preparar la infusión.", "2. Acompañar con tostadas con aceite."],
+    "beneficio": "Carga mineral cero.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-21",
+    "nombre": "Pancake de Avena y Manzana",
+    "descripcion": "Mezcla homogénea fácil de tragar.",
+    "ingredientes": ["3 cdas de avena", "1/2 manzana rallada", "1 clara de huevo"],
+    "preparacion": [
+      "1. Mezclar todo.",
+      "2. Cocinar en sartén por ambos lados."
+    ],
+    "beneficio": "Fibra soluble.",
+    "restricciones": ["Bajo potasio"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-22",
+    "nombre": "Pan con Atún al Agua (Enjuagado)",
+    "descripcion": "Omega 3 para el corazón.",
+    "ingredientes": ["1/2 marraqueta sin sal", "30g de atún al agua", "Cebolla picada (lavada)"],
+    "preparacion": [
+      "1. Pasar el atún por colador y lavar con agua para quitar sodio.",
+      "2. Mezclar con cebolla y poner en el pan."
+    ],
+    "beneficio": "Cardioprotector.",
+    "restricciones": ["Lavar enlatado obligatoriamente"],
+    "tiempoPreparacion": "7 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-23",
+    "nombre": "Crema de Trigo",
+    "descripcion": "Caliente y reconfortante.",
+    "ingredientes": ["3 cdas de harina de trigo tostado", "1 taza de agua", "Endulzante"],
+    "preparacion": [
+      "1. Mezclar harina con agua fría.",
+      "2. Calentar hasta que espese revolviendo."
+    ],
+    "beneficio": "Baja carga renal.",
+    "restricciones": ["Bajo fósforo"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-24",
+    "nombre": "Sándwich de Pavo Cocido",
+    "descripcion": "Proteína magra de calidad.",
+    "ingredientes": ["1 rebanada de pan molde sin sal", "1 lámina de pechuga de pavo cocida (natural)", "Lechuga"],
+    "preparacion": ["1. Armar el sándwich con lechuga fresca."],
+    "beneficio": "Bajo en grasas saturadas.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "3 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-25",
+    "nombre": "Macedonia de Frutas de la Estación",
+    "descripcion": "Mix de frutas permitidas.",
+    "ingredientes": ["1/4 manzana", "1/4 pera", "2 uvas", "Jugo de limón"],
+    "preparacion": ["1. Picar y mezclar.", "2. El limón ayuda a fijar hierro del resto del día."],
+    "beneficio": "Vitaminas puras.",
+    "restricciones": ["Control de porción de fruta"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-26",
+    "nombre": "Claras al Horno con Tomate",
+    "descripcion": "Textura de 'huevo frito' pero saludable.",
+    "ingredientes": ["2 claras", "1 rodaja de tomate", "Orégano"],
+    "preparacion": [
+      "1. Poner rodaja de tomate en fuente pequeña.",
+      "2. Cubrir con claras y hornear 10 min."
+    ],
+    "beneficio": "Sin grasas trans.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-27",
+    "nombre": "Pan con Pasta de Zanahoria",
+    "descripcion": "Vitamina A para los pulmones.",
+    "ingredientes": ["1/2 marraqueta sin sal", "1 zanahoria cocida y molida", "Comino"],
+    "preparacion": ["1. Hacer puré con la zanahoria y comino.", "2. Untar en el pan."],
+    "beneficio": "Salud alveolar.",
+    "restricciones": ["Bajo sodio"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-28",
+    "nombre": "Avena con Semillas de Zapallo (Pepitas)",
+    "descripcion": "Magnesio para el corazón.",
+    "ingredientes": ["1/2 taza avena cocida", "1 cdta de pepitas de zapallo", "Canela"],
+    "preparacion": ["1. Añadir las pepitas a la avena lista."],
+    "beneficio": "Ritmo cardíaco saludable.",
+    "restricciones": ["Fósforo controlado"],
+    "tiempoPreparacion": "15 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-29",
+    "nombre": "Tostadas con Aceite de Coco y Canela",
+    "descripcion": "Energía de cadena media.",
+    "ingredientes": ["2 rebanadas pan sin sal", "1 cdta aceite de coco", "Canela"],
+    "preparacion": ["1. Untar aceite en pan caliente y espolvorear canela."],
+    "beneficio": "Energía sin carga mineral.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "5 min",
+    "categoria": "desayuno"
+  },
+  {
+    "id": "des-30",
+    "nombre": "Huevo Revuelto con Ciboulette",
+    "descripcion": "Sabor fresco y elegante.",
+    "ingredientes": ["2 claras", "Ciboulette picado", "1/2 marraqueta sin sal"],
+    "preparacion": ["1. Cocinar claras con el ciboulette.", "2. Acompañar con pan."],
+    "beneficio": "Bajo fósforo.",
+    "restricciones": ["Sin sal"],
+    "tiempoPreparacion": "10 min",
+    "categoria": "desayuno"
+  }
+]

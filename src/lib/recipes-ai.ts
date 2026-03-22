@@ -4,6 +4,7 @@
 interface Receta {
   id: string;
   nombre: string;
+  descripcion?: string;
   ingredientes: string[];
   preparacion: string[];
   beneficio: string;
@@ -11,8 +12,6 @@ interface Receta {
   tiempoPreparacion: string;
   categoria: 'desayuno' | 'almuerzo' | 'cena';
 }
-
-
 
 // Alimentos recomendados organizados por sistema
 export interface AlimentoRecomendado {
@@ -76,6 +75,28 @@ export const ALIMENTOS_RECOMENDADOS: AlimentoRecomendado[] = [
 ];
 
 export type { Receta };
+
+/**
+ * Grupos de alimentos culinariamente apropiados por horario.
+ * Máx. ~8 ingredientes por grupo para mantener el prompt corto.
+ */
+export const ALIMENTOS_POR_CATEGORIA: Record<'desayuno' | 'almuerzo' | 'cena', string[]> = {
+  // Mañana: cereales, frutas, huevo — ligeros y energizantes
+  desayuno: [
+    'Avena', 'Huevo', 'Manzana', 'Plátano', 'Naranja',
+    'Pan blanco sin sal', 'Pera', 'Arándanos',
+  ],
+  // Mediodía: proteína + verdura + carbohidrato — plato principal chileno
+  almuerzo: [
+    'Pollo sin piel', 'Pescado blanco', 'Lentejas', 'Arroz blanco',
+    'Zanahoria', 'Espinaca', 'Cebolla', 'Ajo',
+  ],
+  // Noche: verduras livianas + proteína magra — fácil de digerir
+  cena: [
+    'Zapallo italiano', 'Coliflor', 'Huevo', 'Pescado blanco',
+    'Lechuga', 'Pepino', 'Palta', 'Aceite de oliva',
+  ],
+};
 
 export interface AlimentoEvitar {
   nombre: string;

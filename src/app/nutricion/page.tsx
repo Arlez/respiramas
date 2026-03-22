@@ -5,6 +5,17 @@ import Header from '@/components/Header';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { ALIMENTOS_RECOMENDADOS, ALIMENTOS_EVITAR, type Receta, type AlimentoRecomendado, type AlimentoEvitar } from '@/lib/recipes-ai';
+import {
+  guardarRecetasIA,
+  obtenerRecetasIA,
+  fechaHoy,
+  limpiarRecetasAntes,
+  borrarRecetasFecha,
+  guardarFavorita,
+  eliminarFavorita,
+  obtenerFavoritasPorCategoria,
+  esFavorita,
+} from '@/lib/db';
 
 type Seccion = 'menu' | 'alimentos' | 'recetas' | 'evitar';
 
@@ -76,31 +87,55 @@ function TarjetaAlimento({ alimento }: { alimento: AlimentoRecomendado }) {
   );
 }
 
-function TarjetaReceta({ receta }: { receta: Receta }) {
+const MODELO_NOMBRES: Record<string, string> = {
+  'google/gemma-3-27b-it:free': 'Gemma 3 27B',
+  'z-ai/glm-4.5-air:free': 'GLM 4.5 Air',
+  'stepfun/step-3.5-flash:free': 'StepFun 3.5',
+};
+
+function TarjetaReceta({ receta, isFavorita, onToggleFavorita }: { receta: Receta; isFavorita?: boolean; onToggleFavorita?: (r: Receta) => void }) {
   const [expandida, setExpandida] = useState(false);
 
   return (
-    <Card color="green">
+    <Card color="green" className="relative">
+      <div className="absolute top-3 right-3">
+        <button
+          onClick={() => onToggleFavorita && onToggleFavorita(receta)}
+          aria-label={isFavorita ? 'Quitar favorita' : 'Marcar como favorita'}
+          className="text-yellow-500 text-lg"
+        >
+          {isFavorita ? '★' : '☆'}
+        </button>
+      </div>
       <div className="flex items-center gap-2 mb-2">
         <span className="text-2xl">{CATEGORIA_ICONOS[receta.categoria]}</span>
         <span className="text-sm font-medium text-green-600">{CATEGORIA_NOMBRES[receta.categoria]}</span>
         <span className="text-sm text-gray-400 ml-auto">⏱️ {receta.tiempoPreparacion}</span>
       </div>
 
-      <h3 className="text-xl font-bold text-gray-800">{receta.nombre}</h3>
+      <h3 className="text-xl font-bold text-gray-800 mb-1">{receta.nombre}</h3>
+
+      {receta.descripcion && (
+        <p className="text-gray-600 text-sm mb-3">{receta.descripcion}</p>
+      )}
+
+      <div className="bg-green-50 rounded-xl p-3 border border-green-200 mb-3">
+        <h4 className="font-bold text-green-800 mb-1 text-sm">💚 Beneficio para su salud:</h4>
+        <p className="text-green-700 text-sm">{receta.beneficio}</p>
+      </div>
 
       <button
         onClick={() => setExpandida(!expandida)}
-        className="mt-2 text-green-600 font-semibold text-lg hover:underline"
+        className="mt-1 text-green-600 font-semibold text-sm hover:underline"
       >
-        {expandida ? '▼ Ocultar detalle' : '▶ Ver receta completa'}
+        {expandida ? '▼ Ocultar ingredientes y preparación' : '▶ Ver ingredientes y preparación'}
       </button>
 
       {expandida && (
         <div className="mt-3 space-y-3">
           <div>
             <h4 className="font-bold text-gray-700 mb-1">🛒 Ingredientes:</h4>
-            <ul className="list-disc list-inside text-gray-600 space-y-1">
+            <ul className="list-disc list-inside text-gray-600 space-y-1 text-sm">
               {receta.ingredientes.map((ing, i) => (
                 <li key={i}>{ing}</li>
               ))}
@@ -109,16 +144,11 @@ function TarjetaReceta({ receta }: { receta: Receta }) {
 
           <div>
             <h4 className="font-bold text-gray-700 mb-1">👩‍🍳 Preparación:</h4>
-            <ol className="list-decimal list-inside text-gray-600 space-y-1">
+            <ol className="list-decimal list-inside text-gray-600 space-y-1 text-sm">
               {receta.preparacion.map((paso, i) => (
                 <li key={i}>{paso}</li>
               ))}
             </ol>
-          </div>
-
-          <div className="bg-green-100 rounded-xl p-3 border border-green-300">
-            <h4 className="font-bold text-green-800 mb-1">💚 Beneficio para su salud:</h4>
-            <p className="text-green-700">{receta.beneficio}</p>
           </div>
         </div>
       )}
@@ -130,46 +160,108 @@ export default function NutricionPage() {
   const [seccion, setSeccion] = useState<Seccion>('menu');
   const [filtroSistema, setFiltroSistema] = useState<string | null>(null);
   const [recetasHoy, setRecetasHoy] = useState<Receta[]>([]);
+  const [modelosUsados, setModelosUsados] = useState<Record<string, string>>({});
   const [cargandoRecetas, setCargandoRecetas] = useState(false);
   const [errorRecetas, setErrorRecetas] = useState<string | null>(null);
-  const [reasoningDetails, setReasoningDetails] = useState<any | null>(null);
-  const [showDebug, setShowDebug] = useState(false);
-  const [rawContent, setRawContent] = useState<string | null>(null);
+  const [selectedCategoria, setSelectedCategoria] = useState<'desayuno' | 'almuerzo' | 'cena' | null>(null);
+  const [favoritasIds, setFavoritasIds] = useState<Record<string, boolean>>({});
 
-  const cargarRecetas = useCallback(async () => {
+  // Cargar favoritas cuando se entra a la sección de recetas
+  useEffect(() => {
+    if (seccion !== 'recetas') return;
+    (async () => {
+      try {
+        const fDes = await obtenerFavoritasPorCategoria('desayuno');
+        const fAlm = await obtenerFavoritasPorCategoria('almuerzo');
+        const fCen = await obtenerFavoritasPorCategoria('cena');
+        const all = [...(fDes || []), ...(fAlm || []), ...(fCen || [])];
+        const map: Record<string, boolean> = {};
+        all.forEach((f) => { if (f && f.id) map[f.id] = true; });
+        setFavoritasIds(map);
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, [seccion]);
+
+  // Toggle favorita
+  const toggleFavorita = async (rec: Receta) => {
+    try {
+      if (favoritasIds[rec.id]) {
+        await eliminarFavorita(rec.id);
+        setFavoritasIds((prev) => {
+          const copy = { ...prev };
+          delete copy[rec.id];
+          return copy;
+        });
+      } else {
+        await guardarFavorita({ id: rec.id, categoria: rec.categoria, receta: rec, addedAt: Date.now() } as any);
+        setFavoritasIds((prev) => ({ ...prev, [rec.id]: true }));
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  // Cargar recetas para una categoría específica. Primero revisa cache local (IndexedDB) por la fecha actual.
+  const cargarRecetasCategoria = useCallback(async (categoria: 'desayuno' | 'almuerzo' | 'cena') => {
     setCargandoRecetas(true);
     setErrorRecetas(null);
     try {
-      const res = await fetch('/api/recetas');
+      // Limpiar recetas antiguas (antes de hoy) en segundo plano
+      const hoy = fechaHoy();
+      limpiarRecetasAntes(hoy).catch(() => {});
+
+      const cached = await obtenerRecetasIA(hoy, categoria);
+      if (cached) {
+        setRecetasHoy((prev) => [...prev.filter((r) => r.categoria !== categoria), ...(cached as Receta[])]);
+        setCargandoRecetas(false);
+        return;
+      }
+
+      const res = await fetch(`/api/recetas?categoria=${categoria}`);
       if (!res.ok) {
         const t = await res.text().catch(() => '');
         throw new Error(t || 'No se pudieron cargar las recetas');
       }
       const data = await res.json();
+      // Soportar respuesta antigua { recetas: [...] } y nueva { receta: {...} }
+      const fetchedArr: Receta[] = data.recetas ?? (data.receta ? [data.receta] : []);
 
-      // Soportar varios formatos:
-      // 1) array directo
-      // 2) { recetas, reasoning }
-      // 3) { raw, reasoning, note: 'json_parse_failed' }
-      if (Array.isArray(data)) {
-        setRecetasHoy(data);
-        setReasoningDetails(null);
-        setRawContent(null);
-      } else if (data && data.recetas) {
-        setRecetasHoy(data.recetas);
-        setReasoningDetails(data.reasoning ?? null);
-        setRawContent(null);
-      } else if (data && data.raw) {
-        setRecetasHoy([]);
-        setReasoningDetails(data.reasoning ?? null);
-        setRawContent(String(data.raw).slice(0, 200000));
-        setErrorRecetas('La IA devolvió JSON inválido — ver depuración');
-      } else {
-        setRecetasHoy([]);
-        setReasoningDetails(null);
-        setRawContent(null);
-        throw new Error('Formato inesperado de la respuesta de la IA');
+      // Cargar favoritas de la categoría y elegir la favorita del día (rotación diaria)
+      const favs = await obtenerFavoritasPorCategoria(categoria);
+      let firstFav: Receta | null = null;
+      if (favs && favs.length > 0) {
+        try {
+          const key = `rotacion_fav_${categoria}`;
+          const lastStr = localStorage.getItem(key);
+          const last = lastStr ? parseInt(lastStr, 10) : -1;
+          const next = (isNaN(last) ? 0 : ((last + 1) % favs.length));
+          localStorage.setItem(key, String(next));
+          firstFav = (favs[next] as any).receta ?? null;
+        } catch (e) {
+          // localStorage puede no estar disponible; fallback al primero
+          firstFav = (favs[0] as any).receta ?? null;
+        }
       }
+
+      // Eliminar de fetched cualquier receta que esté marcada favorita (para evitar duplicados)
+      const favIds = new Set((favs || []).map((f) => f.id));
+      const nonFavFetched = fetchedArr.filter((r) => !favIds.has(r.id));
+
+      // Construir lista final: colocar la favorita (si existe) en primer lugar y completar hasta 3
+      const finalList: Receta[] = [];
+      if (firstFav) finalList.push(firstFav);
+      for (const item of nonFavFetched) {
+        if (finalList.length >= 3) break;
+        finalList.push(item);
+      }
+
+      setRecetasHoy((prev) => [...prev.filter((r) => r.categoria !== categoria), ...finalList]);
+      setModelosUsados((prev) => ({ ...prev, [categoria]: data.modelo ?? prev[categoria] }));
+
+      // Guardar en cache local para el resto del día (guardar lo que trajo la IA/fetch)
+      await guardarRecetasIA(hoy, categoria, fetchedArr);
     } catch (e) {
       setErrorRecetas(e instanceof Error ? e.message : 'Error desconocido');
     } finally {
@@ -178,10 +270,11 @@ export default function NutricionPage() {
   }, []);
 
   useEffect(() => {
-    if (seccion === 'recetas' && recetasHoy.length === 0 && !cargandoRecetas) {
-      cargarRecetas();
+    // No auto-generate al entrar; el usuario elige la categoría.
+    if (seccion !== 'recetas') {
+      setSelectedCategoria(null);
     }
-  }, [seccion, recetasHoy.length, cargandoRecetas, cargarRecetas]);
+  }, [seccion]);
 
   const alimentosFiltrados = filtroSistema
     ? ALIMENTOS_RECOMENDADOS.filter((a) => a.sistemas.includes(filtroSistema as 'corazón' | 'pulmón' | 'riñón' | 'sangre'))
@@ -189,7 +282,7 @@ export default function NutricionPage() {
 
   return (
     <>
-      <Header titulo="🥗 Nutrición" mostrarVolver />
+      <Header titulo="🥗 Nutrición" mostrarVolver onVolver={() => setSeccion('menu')} />
       <div className="p-4 space-y-4">
         {seccion === 'menu' && (
           <>
@@ -207,7 +300,7 @@ export default function NutricionPage() {
             </p>
 
             <Button fullWidth variant="secondary" onClick={() => setSeccion('recetas')}>
-              👩‍🍳 Recetas del Día (IA)
+              👩‍🍳 Recetas del Día
             </Button>
             <p className="text-gray-500 text-center text-sm">
               9 recetas generadas por IA según su condición
@@ -287,7 +380,7 @@ export default function NutricionPage() {
 
         {seccion === 'recetas' && (
           <>
-            <Card icon="👩‍🍳" title="Recetas del día (IA)" color="green">
+            <Card icon="👩‍🍳" title="Recetas del día" color="green">
               <p className="text-gray-600">
                 9 recetas generadas por IA, adaptadas a su condición: bajas en sal, ricas en hierro y antiinflamatorias.
               </p>
@@ -306,7 +399,7 @@ export default function NutricionPage() {
               <Card color="red">
                 <p className="text-red-700 mb-3">⚠️ {errorRecetas}</p>
                 <button
-                  onClick={cargarRecetas}
+                  onClick={() => selectedCategoria && cargarRecetasCategoria(selectedCategoria)}
                   className="w-full py-2 font-semibold text-red-700 border border-red-400 rounded-xl"
                 >
                   🔄 Reintentar
@@ -316,53 +409,65 @@ export default function NutricionPage() {
 
             {!cargandoRecetas && !errorRecetas && (
               <>
-                {(['desayuno', 'almuerzo', 'cena'] as const).map((cat) => {
-                  const recetasCat = recetasHoy.filter((r) => r.categoria === cat);
-                  return recetasCat.length > 0 ? (
-                    <div key={cat} className="space-y-3">
-                      <h2 className="text-xl font-bold text-gray-700 flex items-center gap-2 pt-2">
-                        {CATEGORIA_ICONOS[cat]} {CATEGORIA_NOMBRES[cat]}
+                <div className="flex gap-3">
+                  <Button fullWidth onClick={async () => { setSelectedCategoria('desayuno'); await cargarRecetasCategoria('desayuno'); }}>
+                    🌅 Desayuno
+                  </Button>
+                  <Button fullWidth onClick={async () => { setSelectedCategoria('almuerzo'); await cargarRecetasCategoria('almuerzo'); }}>
+                    ☀️ Almuerzo
+                  </Button>
+                  <Button fullWidth onClick={async () => { setSelectedCategoria('cena'); await cargarRecetasCategoria('cena'); }}>
+                    🌙 Cena
+                  </Button>
+                </div>
+
+                {selectedCategoria && (
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between pt-2">
+                      <h2 className="text-xl font-bold text-gray-700 flex items-center gap-2">
+                        {CATEGORIA_ICONOS[selectedCategoria]} {CATEGORIA_NOMBRES[selectedCategoria]}
                       </h2>
-                      {recetasCat.map((receta) => (
-                        <TarjetaReceta key={receta.id} receta={receta} />
+                    </div>
+                    <div className="mt-4 space-y-4">
+                      {recetasHoy.filter((r) => r.categoria === selectedCategoria).map((receta) => (
+                        <TarjetaReceta key={receta.id} receta={receta} isFavorita={!!favoritasIds[receta.id]} onToggleFavorita={toggleFavorita} />
                       ))}
                     </div>
-                  ) : null;
-                })}
 
-                {recetasHoy.length > 0 && (
-                  <Button fullWidth variant="secondary" onClick={cargarRecetas}>
-                    🔄 Generar nuevas recetas
-                  </Button>
+                    
+                  </div>
                 )}
               </>
             )}
 
             <Card icon="🤖" color="yellow">
               <p className="text-gray-700 text-sm">
-                Estas recetas son generadas por IA con criterios de salud. Consulte a su nutricionista antes de cambios importantes en su dieta.
+                Recetas generadas en paralelo por 3 modelos de IA, adaptadas a su condición. Consulte a su nutricionista antes de cambios importantes en su dieta.
               </p>
             </Card>
 
-            {reasoningDetails && (
-              <div className="mt-2">
-                <button
-                  onClick={() => setShowDebug(!showDebug)}
-                  className="w-full py-2 mb-2 font-semibold text-gray-700 border border-gray-300 rounded-xl"
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-3">
+                <Button
+                  fullWidth
+                  variant="ghost"
+                  onClick={async () => {
+                    const hoy = fechaHoy();
+                    try {
+                      await borrarRecetasFecha(hoy);
+                      setRecetasHoy([]);
+                      setSelectedCategoria(null);
+                      // feedback simple en dev
+                      // eslint-disable-next-line no-alert
+                      alert('Recetas del día reiniciadas (dev)');
+                    } catch (e) {
+                      // eslint-disable-next-line no-alert
+                      alert('Error al reiniciar recetas: ' + (e instanceof Error ? e.message : String(e)));
+                    }
+                  }}
                 >
-                  {showDebug ? 'Ocultar detalles IA' : 'Mostrar detalles IA (depuración)'}
-                </button>
-                {showDebug && (
-                  <Card color="white">
-                    <pre className="text-xs whitespace-pre-wrap max-h-64 overflow-auto">{JSON.stringify(reasoningDetails, null, 2)}</pre>
-                    {rawContent && (
-                      <>
-                        <h4 className="mt-3 font-medium">Respuesta cruda (fragmento):</h4>
-                        <pre className="text-xs whitespace-pre-wrap max-h-64 overflow-auto">{rawContent}</pre>
-                      </>
-                    )}
-                  </Card>
-                )}
+                  DEV: Reiniciar recetas del día
+                </Button>
               </div>
             )}
 
