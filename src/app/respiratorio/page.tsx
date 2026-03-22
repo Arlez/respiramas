@@ -99,6 +99,21 @@ export default function RespiratorioPage() {
   const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
+  // Wake Lock — evitar que la pantalla se apague durante la actividad
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const acquireWakeLock = async () => {
+    if (typeof navigator === 'undefined' || !('wakeLock' in navigator)) return;
+    try {
+      wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+    } catch (_) { /* silencioso si el navegador lo deniega */ }
+  };
+
+  const releaseWakeLock = () => {
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
+  };
+
   const initAudio = async () => {
     if (audioInitializedRef.current) return;
     const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
@@ -279,6 +294,7 @@ export default function RespiratorioPage() {
   // al completar la sesión: guardar automáticamente y felicitar con voz
   useEffect(() => {
     if (!completado) return;
+    releaseWakeLock();
     try {
       // tono de felicitación
       try { playInhale(0.3); playExhale(0.6); } catch (e) { /* noop */ }
@@ -440,6 +456,7 @@ export default function RespiratorioPage() {
                       setPasoActual(0);
                       setSegundos(ejercicioActivo[0].duracion);
                       setEnCurso(true);
+                      acquireWakeLock();
                     }}
                   >
                     Iniciar
@@ -447,7 +464,7 @@ export default function RespiratorioPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button fullWidth variant="ghost" onClick={() => { setFase('menu'); setCompletado(false); }}>
+                  <Button fullWidth variant="ghost" onClick={() => { releaseWakeLock(); setFase('menu'); setCompletado(false); }}>
                     Volver
                   </Button>
                 </div>
@@ -493,7 +510,7 @@ export default function RespiratorioPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <button className="w-full py-4 rounded-2xl border-2 border-red-200 bg-red-50 text-red-600 font-bold text-base active:scale-95 transition-all hover:bg-red-100" onClick={() => { setFase('menu'); setCompletado(false); setEnCurso(false); stopSpeak(); }}>
+                  <button className="w-full py-4 rounded-2xl border-2 border-red-200 bg-red-50 text-red-600 font-bold text-base active:scale-95 transition-all hover:bg-red-100" onClick={() => { releaseWakeLock(); setFase('menu'); setCompletado(false); setEnCurso(false); stopSpeak(); }}>
                     ✕ Detener ejercicio
                   </button>
                 </div>

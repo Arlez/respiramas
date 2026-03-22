@@ -40,6 +40,21 @@ export default function EjercicioPage() {
   const [guardado, setGuardado] = useState(false);
   const [alerta, setAlerta] = useState<string | null>(null);
 
+  // Wake Lock — evitar que la pantalla se apague durante la actividad
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const acquireWakeLock = async () => {
+    if (typeof navigator === 'undefined' || !('wakeLock' in navigator)) return;
+    try {
+      wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+    } catch (_) { /* silencioso si el navegador lo deniega */ }
+  };
+
+  const releaseWakeLock = () => {
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
+  };
+
   // Calcular intensidad recomendada al cargar
   useEffect(() => {
     calcularIntensidadRecomendada().then((rec) => {
@@ -57,6 +72,7 @@ export default function EjercicioPage() {
     setCompletado(false);
     setDuracion(0);
     setFase('caminata');
+    acquireWakeLock();
     // Intentar desbloquear audio tras interacción del usuario
     try {
       ensureAudioUnlocked();
@@ -105,6 +121,7 @@ export default function EjercicioPage() {
             const sigRep = repeticionActual + 1;
             if (sigRep > config.repeticiones) {
               setCompletado(true);
+              releaseWakeLock();
               return 0;
             }
             setRepeticionActual(sigRep);
@@ -264,6 +281,7 @@ export default function EjercicioPage() {
               fullWidth
               variant="danger"
               onClick={() => {
+                releaseWakeLock();
                 setCompletado(true);
               }}
             >
@@ -277,10 +295,10 @@ export default function EjercicioPage() {
             <Card icon="🎉" title="¡Caminata completada!" color="green">
               <p className="text-lg">Tiempo total: {formatearTiempo(duracion)}</p>
             </Card>
-            <Button fullWidth onClick={() => setFase('registro')}>
+            <Button fullWidth onClick={() => { releaseWakeLock(); setFase('registro'); }}>
               📊 Registrar resultados
             </Button>
-            <Button fullWidth variant="ghost" onClick={() => setFase('menu')}>
+            <Button fullWidth variant="ghost" onClick={() => { releaseWakeLock(); setFase('menu'); }}>
               Volver
             </Button>
           </div>

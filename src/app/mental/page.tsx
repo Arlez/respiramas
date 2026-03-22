@@ -71,6 +71,21 @@ export default function MentalPage() {
   const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
+  // Wake Lock — evitar que la pantalla se apague durante la actividad
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const acquireWakeLock = async () => {
+    if (typeof navigator === 'undefined' || !('wakeLock' in navigator)) return;
+    try {
+      wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+    } catch (_) { /* silencioso si el navegador lo deniega */ }
+  };
+
+  const releaseWakeLock = () => {
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
+  };
+
   // cargar voces en cuanto estén disponibles (el evento voiceschanged es necesario en Chrome)
   useEffect(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
@@ -155,6 +170,7 @@ export default function MentalPage() {
           if (sig >= pasos.length) {
             setCompletado(true);
             setEnCurso(false);
+            releaseWakeLock();
             return 0;
           }
           setPasoActual(sig);
@@ -400,6 +416,7 @@ export default function MentalPage() {
                       setPasoActual(0);
                       setSegundos(pasos[0].duracion);
                       setEnCurso(true);
+                      acquireWakeLock();
                     }}
                   >
                     Iniciar
@@ -407,7 +424,7 @@ export default function MentalPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button fullWidth variant="ghost" onClick={() => { setActividad('menu'); setCompletado(false); }}>
+                  <Button fullWidth variant="ghost" onClick={() => { releaseWakeLock(); setActividad('menu'); setCompletado(false); }}>
                     Volver
                   </Button>
                 </div>
@@ -435,7 +452,7 @@ export default function MentalPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button fullWidth variant="danger" onClick={() => { setActividad('menu'); setCompletado(false); stopSpeak(); setEnCurso(false); }}>
+                  <Button fullWidth variant="danger" onClick={() => { releaseWakeLock(); setActividad('menu'); setCompletado(false); stopSpeak(); setEnCurso(false); }}>
                     Detener
                   </Button>
                 </div>
