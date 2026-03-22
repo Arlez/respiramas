@@ -8,6 +8,7 @@ import NumberInput from '@/components/ui/NumberInput';
 import SliderInput from '@/components/ui/SliderInput';
 import AlertBanner from '@/components/ui/AlertBanner';
 import { guardarRegistro, fechaHoy } from '@/lib/db';
+import historyLib from '@/lib/history';
 import { evaluarSpO2, evaluarFatiga, procesarAlerta, calcularIntensidadRecomendada } from '@/lib/rules';
 import { ensureAudioUnlocked, playStartSound, playRestSound } from '@/lib/sounds';
 
@@ -154,6 +155,13 @@ export default function EjercicioPage() {
       },
       timestamp: Date.now(),
     });
+    try {
+      await historyLib.addHistory('ejercicio registrado', { duracion: Math.round(duracion / 60), spo2Min, fatiga, intensidad, fecha: fechaHoy() });
+    } catch (e) {
+      // no bloquear la UI por fallos en historial
+      // eslint-disable-next-line no-console
+      console.warn('No se pudo guardar historial de ejercicio:', e);
+    }
     setGuardado(true);
   }, [spo2Min, fatiga, duracion, intensidad]);
 

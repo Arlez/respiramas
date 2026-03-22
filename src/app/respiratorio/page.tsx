@@ -2,15 +2,15 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Header from '@/components/Header';
-import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import NumberInput from '@/components/ui/NumberInput';
 import SliderInput from '@/components/ui/SliderInput';
 import AlertBanner from '@/components/ui/AlertBanner';
 import { guardarRegistro, fechaHoy } from '@/lib/db';
+import historyLib from '@/lib/history';
 import { evaluarSpO2, procesarAlerta } from '@/lib/rules';
 
-type Fase = 'menu' | 'diafragmatica' | 'labios' | 'registro';
+type Fase = 'menu' | 'diafragmatica' | 'labios' | 'huffing' | 'registro';
 
 interface PasoEjercicio {
   instruccion: string;
@@ -39,6 +39,28 @@ const EJERCICIO_DIAFRAGMATICO: PasoEjercicio[] = [
   { instruccion: '✅ ¡Excelente! Ha completado el ejercicio', duracion: 5, tipo: 'descanso' },
 ];
 
+const EJERCICIO_HUFFING: PasoEjercicio[] = [
+  { instruccion: 'Siéntese derecho/a, con los pies bien apoyados y el oxígeno puesto', duracion: 6, tipo: 'descanso' },
+  // Ciclo 1
+  { instruccion: '🫁 INHALE profundo y tranquilo por la nariz... lento y pausado', duracion: 4, tipo: 'inhalar' },
+  { instruccion: '⏸️ Mantenga el aire... el aire se mete detrás de la flema', duracion: 3, tipo: 'mantener' },
+  { instruccion: '💨 HUFF #1 — Abra la boca en círculo y suelte el aire fuerte: "Jaaaaff" (sin toser)', duracion: 3, tipo: 'exhalar' },
+  { instruccion: '💨 HUFF #2 — Repita: boca en círculo y suelte fuerte: "Jaaaaff"', duracion: 3, tipo: 'exhalar' },
+  { instruccion: '✨ Descanse... respire con normalidad unos segundos', duracion: 6, tipo: 'descanso' },
+  // Ciclo 2
+  { instruccion: '🫁 INHALE profundo y tranquilo por la nariz...', duracion: 4, tipo: 'inhalar' },
+  { instruccion: '⏸️ Mantenga el aire 2-3 segundos...', duracion: 3, tipo: 'mantener' },
+  { instruccion: '💨 HUFF #1 — Boca en círculo: "Jaaaaff"', duracion: 3, tipo: 'exhalar' },
+  { instruccion: '💨 HUFF #2 — Repita: "Jaaaaff"', duracion: 3, tipo: 'exhalar' },
+  { instruccion: '✨ Descanse... respire con calma', duracion: 6, tipo: 'descanso' },
+  // Ciclo 3
+  { instruccion: '🫁 INHALE profundo y tranquilo... último ciclo', duracion: 4, tipo: 'inhalar' },
+  { instruccion: '⏸️ Mantenga el aire...', duracion: 3, tipo: 'mantener' },
+  { instruccion: '💨 HUFF #1 — Boca en círculo: "Jaaaaff"', duracion: 3, tipo: 'exhalar' },
+  { instruccion: '💨 HUFF #2 — Último huff: "Jaaaaff"', duracion: 3, tipo: 'exhalar' },
+  { instruccion: '✅ ¡Excelente! Ha completado la limpieza bronquial', duracion: 5, tipo: 'descanso' },
+];
+
 const EJERCICIO_LABIOS: PasoEjercicio[] = [
   { instruccion: 'Siéntese relajado/a', duracion: 5, tipo: 'descanso' },
   { instruccion: 'Cierre la boca. Relaje los hombros. 💨 Frunza los labios como si fuera a silbar', duracion: 5, tipo: 'descanso' },
@@ -54,13 +76,6 @@ const EJERCICIO_LABIOS: PasoEjercicio[] = [
   { instruccion: '💨 EXHALE largo y controlado...', duracion: 5, tipo: 'exhalar' },
   { instruccion: '✅ ¡Muy bien! Ejercicio completado', duracion: 5, tipo: 'descanso' },
 ];
-
-const coloresFase: Record<string, string> = {
-  inhalar: 'bg-blue-100 border-blue-400',
-  exhalar: 'bg-green-100 border-green-400',
-  mantener: 'bg-yellow-100 border-yellow-400',
-  descanso: 'bg-gray-100 border-gray-300',
-};
 
 export default function RespiratorioPage() {
   const [fase, setFase] = useState<Fase>('menu');
@@ -147,8 +162,10 @@ export default function RespiratorioPage() {
     o.stop(now + dur + 0.05);
   };
 
-  const iniciarEjercicio = (tipo: 'diafragmatica' | 'labios') => {
-    const pasos = tipo === 'diafragmatica' ? EJERCICIO_DIAFRAGMATICO : EJERCICIO_LABIOS;
+  const iniciarEjercicio = (tipo: 'diafragmatica' | 'labios' | 'huffing') => {
+    const pasos = tipo === 'diafragmatica' ? EJERCICIO_DIAFRAGMATICO
+      : tipo === 'labios' ? EJERCICIO_LABIOS
+      : EJERCICIO_HUFFING;
     setEjercicioActivo(pasos);
     setPasoActual(0);
     setSegundos(pasos[0].duracion);
@@ -208,87 +225,261 @@ export default function RespiratorioPage() {
       datos: { spo2, disnea },
       timestamp: Date.now(),
     });
+    try {
+      await historyLib.addHistory('respiratorio registrado', { spo2, disnea, fecha: fechaHoy() });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('No se pudo guardar historial respiratorio:', e);
+    }
     setGuardado(true);
   }, [spo2, disnea]);
+
+  /* Colores del círculo por tipo de paso */
+  const circuloConfig: Record<string, { bg: string; ring: string; anim: string; label: string }> = {
+    inhalar: { bg: 'bg-blue-500', ring: 'bg-blue-300', anim: 'animate-breathe-in', label: 'INHALE' },
+    exhalar: { bg: 'bg-emerald-500', ring: 'bg-emerald-300', anim: 'animate-breathe-out', label: 'EXHALE' },
+    mantener: { bg: 'bg-amber-400', ring: 'bg-amber-200', anim: 'animate-breathe-hold', label: 'MANTÉN' },
+    descanso: { bg: 'bg-slate-400', ring: 'bg-slate-200', anim: '', label: '···' },
+  };
+
+  const cfg = paso ? circuloConfig[paso.tipo] : circuloConfig.descanso;
+  const progreso = ejercicioActivo.length > 0 ? ((pasoActual + 1) / ejercicioActivo.length) * 100 : 0;
 
   return (
     <>
       <Header titulo="🫁 Respiratorio" mostrarVolver />
-      <div className="p-4">
+
+      <div className="px-4 pb-8">
+
+        {/* ────────── MENÚ PRINCIPAL ────────── */}
         {fase === 'menu' && (
-          <div className="space-y-4">
-            <Card icon="💡" title="Ejercicios respiratorios" color="green">
-              <p className="text-gray-600 text-lg mb-4">
-                Estos ejercicios fortalecen sus pulmones de forma segura. Duran entre 5 y 8 minutos.
+          <div className="space-y-5">
+
+            {/* Cabecera */}
+            <div className="mt-2 mb-1 text-center">
+              <p className="text-gray-500 text-base leading-relaxed">
+                Ejercicios para fortalecer sus pulmones de forma segura.
               </p>
-            </Card>
-
-            <Button fullWidth onClick={() => iniciarEjercicio('diafragmatica')}>
-              🫁 Respiración Diafragmática
-            </Button>
-            <p className="text-gray-500 text-center">Fortalece el diafragma · ~5 min</p>
-
-            <Button fullWidth variant="secondary" onClick={() => iniciarEjercicio('labios')}>
-              💨 Labios Fruncidos
-            </Button>
-            <p className="text-gray-500 text-center">Mejora la exhalación · ~4 min</p>
-
-            <div className="mt-6">
-              <Button fullWidth variant="ghost" onClick={() => setFase('registro')}>
-                📊 Registrar SpO2 y Disnea
-              </Button>
             </div>
+
+            {/* Tarjeta Diafragmática */}
+            <button
+              className="exercise-card w-full"
+              onClick={() => iniciarEjercicio('diafragmatica')}
+            >
+              <div style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)' }}
+                className="p-6 flex items-center gap-5">
+                <span className="text-6xl select-none">🫁</span>
+                <div className="flex-1 text-left">
+                  <p className="text-white font-bold text-xl leading-tight">
+                    Respiración Diafragmática
+                  </p>
+                  <p className="text-blue-100 text-sm mt-1">
+                    Fortalece el diafragma · ~5 min
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <span className="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                      5 ciclos
+                    </span>
+                    <span className="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                      Principiante
+                    </span>
+                  </div>
+                </div>
+                <span className="text-white text-2xl select-none">▶</span>
+              </div>
+            </button>
+
+            {/* Tarjeta Labios Fruncidos */}
+            <button
+              className="exercise-card w-full"
+              onClick={() => iniciarEjercicio('labios')}
+            >
+              <div style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
+                className="p-6 flex items-center gap-5">
+                <span className="text-6xl select-none">💨</span>
+                <div className="flex-1 text-left">
+                  <p className="text-white font-bold text-xl leading-tight">
+                    Labios Fruncidos
+                  </p>
+                  <p className="text-emerald-100 text-sm mt-1">
+                    Mejora la exhalación · ~4 min
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <span className="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                      5 ciclos
+                    </span>
+                    <span className="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                      EPOC · Asma
+                    </span>
+                  </div>
+                </div>
+                <span className="text-white text-2xl select-none">▶</span>
+              </div>
+            </button>
+
+            {/* Tarjeta Huffing */}
+            <button
+              className="exercise-card w-full"
+              onClick={() => iniciarEjercicio('huffing')}
+            >
+              <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}
+                className="p-6 flex items-center gap-5">
+                <span className="text-6xl select-none">🌬️</span>
+                <div className="flex-1 text-left">
+                  <p className="text-white font-bold text-xl leading-tight">
+                    Limpieza de Vías Aéreas
+                  </p>
+                  <p className="text-amber-100 text-sm mt-1">
+                    Técnica Huffing · Expulsa flemas sin toser
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <span className="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                      3 ciclos
+                    </span>
+                    <span className="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                      Voluntario
+                    </span>
+                  </div>
+                </div>
+                <span className="text-white text-2xl select-none">▶</span>
+              </div>
+            </button>
+
+            {/* Consejo */}
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 items-start">
+              <span className="text-2xl">💡</span>
+              <p className="text-amber-800 text-sm leading-relaxed">
+                Practique en un lugar tranquilo, sentado/a con la espalda recta.
+                Si siente mareo, detenga el ejercicio y descanse.
+              </p>
+            </div>
+
+            {/* Botón registro */}
+            <button
+              className="w-full border-2 border-dashed border-gray-300 rounded-2xl p-4 flex items-center justify-center gap-3
+                         text-gray-500 font-semibold text-base hover:border-gray-400 hover:text-gray-700
+                         active:scale-95 transition-all"
+              onClick={() => setFase('registro')}
+            >
+              <span className="text-xl">📊</span>
+              Registrar SpO2 y Disnea
+            </button>
           </div>
         )}
 
-        {(fase === 'diafragmatica' || fase === 'labios') && !completado && paso && (
+        {/* ────────── EJERCICIO ACTIVO ────────── */}
+        {(fase === 'diafragmatica' || fase === 'labios' || fase === 'huffing') && !completado && paso && (
           <div className="space-y-4">
-            {/* Progreso */}
-            <div className="bg-gray-100 rounded-full h-3 overflow-hidden">
-              <div
-                className="bg-green-500 h-full transition-all duration-500"
-                style={{ width: `${((pasoActual + 1) / ejercicioActivo.length) * 100}%` }}
-              />
-            </div>
-            <p className="text-sm text-gray-500 text-center">
-              Paso {pasoActual + 1} de {ejercicioActivo.length}
-            </p>
 
-            {/* Instrucción principal */}
-            <div className={`${coloresFase[paso.tipo]} border-2 rounded-2xl p-8 text-center`}>
-              <p className="text-2xl font-bold text-gray-800 leading-relaxed">
+            {/* Barra de progreso */}
+            <div className="mt-2 mb-1">
+              <div className="flex justify-between text-xs text-gray-400 mb-1 px-0.5">
+                <span>Paso {pasoActual + 1} de {ejercicioActivo.length}</span>
+                <span>{Math.round(progreso)}%</span>
+              </div>
+              <div className="bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700 ease-in-out"
+                  style={{
+                    width: `${progreso}%`,
+                    background: paso.tipo === 'inhalar' ? '#3b82f6'
+                      : paso.tipo === 'exhalar' ? '#10b981'
+                      : paso.tipo === 'mantener' ? '#f59e0b'
+                      : '#94a3b8',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Panel de instrucción */}
+            <div className={`phase-panel phase-panel--${paso.tipo} animate-float-up`}>
+              <p className="text-xs font-bold uppercase tracking-widest mb-2"
+                style={{
+                  color: paso.tipo === 'inhalar' ? '#1d4ed8'
+                    : paso.tipo === 'exhalar' ? '#15803d'
+                    : paso.tipo === 'mantener' ? '#92400e'
+                    : '#475569',
+                }}>
+                {cfg.label}
+              </p>
+              <p className="text-xl font-bold text-gray-800 leading-relaxed">
                 {paso.instruccion}
               </p>
             </div>
 
-            {/* Círculo de respiración */}
-            <div className="flex justify-center py-6">
-              <div
-                className={`
-                  w-32 h-32 rounded-full flex items-center justify-center text-4xl font-bold text-white shadow-lg
-                  ${paso.tipo === 'inhalar' ? 'bg-blue-500 animate-breathe-in' : ''}
-                  ${paso.tipo === 'exhalar' ? 'bg-green-500 animate-breathe-out' : ''}
-                  ${paso.tipo === 'mantener' ? 'bg-yellow-500' : ''}
-                  ${paso.tipo === 'descanso' ? 'bg-gray-400' : ''}
-                `}
-              >
-                {segundos}
+            {/* Círculo animado de respiración */}
+            <div className="flex justify-center py-4">
+              <div className="breath-circle w-44 h-44">
+                {/* Anillo externo pulsante */}
+                <div className={`breath-circle__ring ${cfg.ring} opacity-50 animate-pulse-ring-slow`} />
+                {/* Anillo medio pulsante */}
+                <div className={`breath-circle__ring ${cfg.ring} opacity-60 animate-pulse-ring`} />
+                {/* Círculo principal */}
+                <div
+                  className={`
+                    w-44 h-44 rounded-full flex flex-col items-center justify-center
+                    shadow-2xl z-10 relative
+                    ${cfg.bg} ${cfg.anim}
+                  `}
+                >
+                  <span className="text-5xl font-black text-white tabular-nums leading-none">
+                    {segundos}
+                  </span>
+                  <span className="text-white/80 text-sm font-semibold mt-1 tracking-wide">
+                    seg
+                  </span>
+                </div>
               </div>
             </div>
 
-            <Button fullWidth variant="danger" onClick={() => { setFase('menu'); setCompletado(false); }}>
-              Detener
-            </Button>
+            {/* Botón detener */}
+            <button
+              className="w-full py-4 rounded-2xl border-2 border-red-200 bg-red-50 text-red-600
+                         font-bold text-base active:scale-95 transition-all hover:bg-red-100"
+              onClick={() => { setFase('menu'); setCompletado(false); }}
+            >
+              ✕ Detener ejercicio
+            </button>
           </div>
         )}
 
+        {/* ────────── COMPLETADO ────────── */}
         {completado && (
-          <div className="space-y-4 text-center">
-            <Card icon="🎉" title="¡Ejercicio completado!" color="green">
-              <p className="text-lg text-gray-700">
-                Ha completado su ejercicio respiratorio. ¡Excelente trabajo!
+          <div className="space-y-5 text-center mt-4">
+            {/* Tarjeta celebratoria */}
+            <div style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
+              className="rounded-3xl p-8 shadow-xl">
+              <div className="text-7xl mb-4">🎉</div>
+              <h2 className="text-white text-2xl font-black mb-2">¡Ejercicio completado!</h2>
+              <p className="text-emerald-100 text-base">
+                Ha completado su ejercicio respiratorio.<br />
+                <strong className="text-white">¡Excelente trabajo!</strong>
               </p>
-            </Card>
+            </div>
+
+            {/* Estadística rápida */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm flex justify-center gap-8">
+              <div className="text-center">
+                <p className="text-3xl font-black text-emerald-600">
+                  {fase === 'diafragmatica' ? '5' : fase === 'labios' ? '5' : '3'}
+                </p>
+                <p className="text-gray-500 text-xs mt-0.5">ciclos</p>
+              </div>
+              <div className="w-px bg-gray-200" />
+              <div className="text-center">
+                <p className="text-3xl font-black text-blue-500">
+                  {fase === 'diafragmatica' ? '~5' : fase === 'labios' ? '~4' : '~3'}
+                </p>
+                <p className="text-gray-500 text-xs mt-0.5">minutos</p>
+              </div>
+              <div className="w-px bg-gray-200" />
+              <div className="text-center">
+                <p className="text-3xl font-black text-amber-500">✓</p>
+                <p className="text-gray-500 text-xs mt-0.5">completo</p>
+              </div>
+            </div>
+
             <Button fullWidth onClick={() => setFase('registro')}>
               📊 Registrar cómo se siente
             </Button>
@@ -302,40 +493,67 @@ export default function RespiratorioPage() {
                 setAlerta(null);
               }}
             >
-              Volver al menú
+              ← Volver al menú
             </Button>
           </div>
         )}
 
+        {/* ────────── REGISTRO ────────── */}
         {fase === 'registro' && (
-          <div className="space-y-4">
-            <Card icon="📊" title="Registro respiratorio" color="blue">
-              <p className="text-gray-600 mb-4">
-                Ingrese su saturación de oxígeno y cómo siente su respiración.
-              </p>
-            </Card>
+          <div className="space-y-5 mt-2">
+            {/* Cabecera de registro */}
+            <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)' }}
+              className="rounded-2xl p-5 flex items-center gap-4 shadow-lg">
+              <span className="text-5xl">📊</span>
+              <div>
+                <h2 className="text-white font-bold text-lg leading-tight">Registro respiratorio</h2>
+                <p className="text-indigo-100 text-sm mt-0.5">
+                  Ingrese su saturación y nivel de disnea
+                </p>
+              </div>
+            </div>
 
             {alerta && <AlertBanner tipo="critica" mensaje={alerta} onClose={() => setAlerta(null)} />}
 
-            <NumberInput
-              label="Saturación de oxígeno (SpO2)"
-              value={spo2}
-              onChange={setSpo2}
-              min={70}
-              max={100}
-              unit="%"
-            />
+            {/* SpO2 */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <NumberInput
+                label="Saturación de oxígeno (SpO2)"
+                value={spo2}
+                onChange={setSpo2}
+                min={70}
+                max={100}
+                unit="%"
+              />
+              {/* Indicador visual SpO2 */}
+              <div className="mt-3 flex gap-1 h-2">
+                {[...Array(10)].map((_, i) => {
+                  const threshold = 70 + i * 3;
+                  const active = spo2 >= threshold;
+                  const color = threshold >= 94 ? 'bg-emerald-400' : threshold >= 90 ? 'bg-amber-400' : 'bg-red-400';
+                  return (
+                    <div key={i} className={`flex-1 rounded-full transition-all ${active ? color : 'bg-gray-200'}`} />
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-400 mt-1 text-right">
+                {spo2 >= 94 ? '✅ Normal' : spo2 >= 90 ? '⚠️ Bajo' : '🔴 Muy bajo'}
+              </p>
+            </div>
 
-            <SliderInput
-              label="Dificultad para respirar (disnea)"
-              value={disnea}
-              onChange={setDisnea}
-              min={1}
-              max={10}
-            />
-            <p className="text-sm text-gray-500 -mt-2 mb-4">
-              1 = Sin dificultad · 10 = Muy difícil respirar
-            </p>
+            {/* Disnea */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <SliderInput
+                label="Dificultad para respirar (disnea)"
+                value={disnea}
+                onChange={setDisnea}
+                min={1}
+                max={10}
+              />
+              <p className="text-sm text-gray-400 mt-2 text-center">
+                1 = Sin dificultad · 10 = Muy difícil respirar
+              </p>
+            </div>
 
             {guardado ? (
               <AlertBanner tipo="exito" mensaje="Registro guardado correctamente" />

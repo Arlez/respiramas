@@ -8,6 +8,7 @@ import SliderInput from '@/components/ui/SliderInput';
 import ToggleInput from '@/components/ui/ToggleInput';
 import AlertBanner from '@/components/ui/AlertBanner';
 import { guardarRegistro, fechaHoy } from '@/lib/db';
+import historyLib from '@/lib/history';
 import { evaluarFatiga, procesarAlerta } from '@/lib/rules';
 
 export default function EnergiaPage() {
@@ -34,6 +35,12 @@ export default function EnergiaPage() {
       datos: { fatiga, mareos, toleranciaEsfuerzo },
       timestamp: Date.now(),
     });
+    try {
+      await historyLib.addHistory('energia registrada', { fatiga, mareos, toleranciaEsfuerzo, fecha: fechaHoy() });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('No se pudo guardar historial energia:', e);
+    }
     setGuardado(true);
   }, [fatiga, mareos, toleranciaEsfuerzo]);
 

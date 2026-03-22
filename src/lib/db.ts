@@ -4,7 +4,7 @@
 import { initialMedications } from './initialMedications';
 
 const DB_NAME = 'respira-más-db';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 export interface RegistroDiario {
   id?: number;
@@ -108,6 +108,15 @@ export function openDB(): Promise<IDBDatabase> {
           recStore.createIndex('activo', 'activo', { unique: false });
           recStore.createIndex('horario', 'horario', { unique: false });
         }
+      
+      // Historial de acciones (genérico): guardar acciones/operaciones por fecha, mes, año
+      if (!db.objectStoreNames.contains('historial')) {
+        const hist = db.createObjectStore('historial', { keyPath: 'id', autoIncrement: true });
+        hist.createIndex('date', 'date', { unique: false }); // YYYY-MM-DD
+        hist.createIndex('month', 'month', { unique: false }); // YYYY-MM
+        hist.createIndex('year', 'year', { unique: false }); // YYYY
+        hist.createIndex('timestamp', 'timestamp', { unique: false });
+      }
     };
 
     request.onsuccess = (event) => {
@@ -313,6 +322,93 @@ export async function sembrarMedicamentos(): Promise<void> {
   }
 }
 
+
+// Sincroniza horarios de medicamentos existentes con la definición en `initialMedications`.
+// Útil cuando se actualiza el catálogo y queremos propagar nuevos horarios a la DB ya instalada.
+export async function sincronizarHorariosCatalogo(): Promise<void> {
+  try {
+    const actuales = await obtenerMedicamentos();
+    if (!actuales || actuales.length === 0) return;
+
+    // Mapear initialMedications por catalogoId
+    const mapa = new Map<string, { times: string[]; frequency?: string }>();
+    initialMedications.forEach((m) => {
+      if (m.id && m.schedule?.times) mapa.set(m.id, { times: m.schedule.times, frequency: m.schedule.frequency });
+    });
+
+    for (const med of actuales) {
+      const catalogoId = med.catalogoId as string | undefined;
+      if (catalogoId && mapa.has(catalogoId)) {
+        const nueva = mapa.get(catalogoId)!;
+        // Comparar y actualizar solo si difiere
+        const horariosActuales = (med.horarios || []).slice().sort().join(',');
+        const horariosNuevos = (nueva.times || []).slice().sort().join(',');
+        if (horariosActuales !== horariosNuevos) {
+          const actualizado = { ...med, horarios: nueva.times, frecuencia: nueva.frequency as any } as any;
+          try {
+            await actualizarMedicamento(actualizado as any);
+          } catch (e) {
+            // ignore errores por compatibilidad
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // no bloquear la app si falla
+  }
+}
+
+// Eliminar duplicados de medicamentos en la base de datos.
+// Agrupa por `catalogoId` si está presente, sino por `nombre`.
+export async function deduplicarMedicamentos(): Promise<void> {
+  try {
+    const meds = await obtenerMedicamentos();
+    if (!meds || meds.length === 0) return;
+
+    const grupos = new Map<string, any[]>();
+    meds.forEach((m: any) => {
+      const key = m.catalogoId ? `c:${m.catalogoId}` : `n:${(m.nombre || '').toLowerCase()}`;
+      if (!grupos.has(key)) grupos.set(key, []);
+      grupos.get(key)!.push(m);
+    });
+
+    for (const [key, lista] of grupos.entries()) {
+      if (lista.length <= 1) continue;
+      // mantener el primero y fusionar los demás
+      const principal = lista[0];
+      const otros = lista.slice(1);
+
+      const horariosSet = new Set<string>((principal.horarios || []).map((h: string) => String(h).slice(0,5)));
+      let activo = !!principal.activo;
+      let dosis = principal.dosis || principal.dosis;
+      let nombre = principal.nombre;
+
+      otros.forEach((o: any) => {
+        (o.horarios || []).forEach((h: string) => horariosSet.add(String(h).slice(0,5)));
+        activo = activo || !!o.activo;
+        if (!dosis && o.dosis) dosis = o.dosis;
+      });
+
+      const horarios = Array.from(horariosSet).sort((a,b)=>a.localeCompare(b));
+      const actualizado = { ...principal, horarios, activo, dosis, nombre } as any;
+
+      try {
+        await actualizarMedicamento(actualizado as any);
+      } catch (e) {
+        // ignore
+      }
+
+      // eliminar los demás por id (si tienen id numérico)
+      for (const o of otros) {
+        if (typeof o.id === 'number') {
+          try { await eliminarMedicamento(o.id as number); } catch (e) { /* ignore */ }
+        }
+      }
+    }
+  } catch (e) {
+    // noop
+  }
+}
 // --- API de Recetas IA (cache local diario) ---
 
 export interface RecetasIARecord {

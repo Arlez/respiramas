@@ -108,6 +108,7 @@ export function cancelarTodosLosRecordatorios(): void {
 
 // Programar recordatorios fijos de la app
 import { obtenerRecordatoriosConfig, guardarRecordatorioConfig } from './db';
+import { obtenerMedicamentos } from './db';
 
 export async function iniciarRecordatoriosFijos(): Promise<void> {
   try {
@@ -133,6 +134,12 @@ export async function iniciarRecordatoriosFijos(): Promise<void> {
         cancelarRecordatorio(c.id);
       }
     });
+    // También programar recordatorios basados en la lista de medicamentos
+    try {
+      await programarRecordatoriosMedicacion();
+    } catch (e) {
+      // noop
+    }
   } catch (e) {
     // si algo falla, mantener comportamiento antiguo (no bloquear)
     programarRecordatorioDiario(
@@ -158,5 +165,46 @@ export async function iniciarRecordatoriosFijos(): Promise<void> {
       '20:00',
       'registro'
     );
+    // Fallback: intentar programar recordatorios de medicación aunque fallen configs
+    try {
+      await programarRecordatoriosMedicacion();
+    } catch (ex) {
+      // noop
+    }
+  }
+}
+
+// Cancelar recordatorios previamente creados para medicamentos (ids que empiecen con `med-`)
+function cancelarRecordatoriosMedicacion() {
+  for (const key of Array.from(recordatoriosActivos.keys())) {
+    if (key.startsWith('med-')) {
+      cancelarRecordatorio(key);
+    }
+  }
+}
+
+// Programar notificaciones para cada medicamento activo y sus horarios.
+export async function programarRecordatoriosMedicacion(): Promise<void> {
+  try {
+    // limpiar recordatorios previos de medicación
+    cancelarRecordatoriosMedicacion();
+
+    const meds = await obtenerMedicamentos();
+    if (!meds || meds.length === 0) return;
+
+    meds.forEach((m) => {
+      if (!m.activo) return;
+      const horarios: string[] = Array.isArray(m.horarios) ? m.horarios : [];
+      horarios.forEach((h) => {
+        const id = `med-${m.id}-${h.replace(':', '')}`;
+        const titulo = `💊 ${m.nombre}`;
+        let cuerpo = `${m.dosis || ''}`;
+        if (m.frecuencia === 'every_other_day') cuerpo += ' · (día por medio)';
+        if (m.proposito) cuerpo += ` · ${m.proposito}`;
+        programarRecordatorioDiario(id, titulo, cuerpo, h, 'medicacion');
+      });
+    });
+  } catch (e) {
+    // no bloquear
   }
 }

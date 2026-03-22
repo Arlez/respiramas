@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import PWARegister from "@/components/PWARegister";
+import ThemeProvider from "@/components/ThemeProvider";
+import MigrateMedTimes from '@/components/MigrateMedTimes';
 
 export const metadata: Metadata = {
   title: "Respira Más",
@@ -33,7 +35,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
       </head>
       <body className="min-h-full flex flex-col bg-gray-50 text-gray-900 font-sans">
+        <ThemeProvider />
         <PWARegister />
+        <MigrateMedTimes />
         <main className="flex-1 pb-20 max-w-lg mx-auto w-full">
           {children}
         </main>

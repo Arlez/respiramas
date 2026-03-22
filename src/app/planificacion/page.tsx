@@ -17,9 +17,9 @@ type Item = {
 };
 
 const MEAL_DEFAULTS: Item[] = [
-  { id: 'meal-desayuno', tipo: 'comida', titulo: 'Desayuno', horario: '08:00' },
-  { id: 'meal-almuerzo', tipo: 'comida', titulo: 'Almuerzo', horario: '13:00' },
-  { id: 'meal-cena', tipo: 'comida', titulo: 'Cena', horario: '20:00' },
+  { id: 'meal-desayuno', tipo: 'comida', titulo: 'Desayuno', horario: '10:00' },
+  { id: 'meal-almuerzo', tipo: 'comida', titulo: 'Almuerzo', horario: '15:00' },
+  { id: 'meal-once', tipo: 'comida', titulo: 'Once', horario: '20:00' },
 ];
 
 function timeToMinutes(hhmm: string) {
@@ -35,7 +35,7 @@ function bloqueFromTime(hhmm: string) {
 }
 
 export default function PlanificacionPage() {
-    const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
@@ -109,6 +109,8 @@ export default function PlanificacionPage() {
         }
       })();
     }, []);
+
+    
 
     const bloques = ['Mañana', 'Tarde', 'Noche'];
 

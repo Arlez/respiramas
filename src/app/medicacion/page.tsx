@@ -18,6 +18,7 @@ import {
   type Medicamento,
   type CumplimientoMedicamento,
 } from '@/lib/db';
+import historyLib from '@/lib/history';
 import { programarRecordatorioDiario, cancelarRecordatorio } from '@/lib/notifications';
 import { detectarInteracciones, correspondeHoy, colorCategoria } from '@/lib/medications';
 
@@ -99,6 +100,12 @@ export default function MedicacionPage() {
           datos: { medicamentoId: medId, horario },
           timestamp: Date.now(),
         });
+      }
+      try {
+        await historyLib.addHistory('medicacion tomada', { medicamentoId: medId, horario, fecha: fechaHoy() });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('No se pudo guardar historial de medicacion:', e);
       }
     } catch (err) {
       // no bloquear la UI si falla

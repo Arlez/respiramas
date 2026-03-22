@@ -6,6 +6,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import AlertBanner from '@/components/ui/AlertBanner';
 import { guardarRegistro, fechaHoy } from '@/lib/db';
+import historyLib from '@/lib/history';
 
 type Actividad = 'menu' | 'respiracion' | 'relajacion' | 'visualizacion';
 
@@ -101,6 +102,12 @@ export default function MentalPage() {
       datos: { actividad, completado: true },
       timestamp: Date.now(),
     });
+    try {
+      await historyLib.addHistory('mental registrado', { actividad, fecha: fechaHoy() });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('No se pudo guardar historial mental:', e);
+    }
     setGuardado(true);
   };
 

@@ -8,6 +8,7 @@ import NumberInput from '@/components/ui/NumberInput';
 import ToggleInput from '@/components/ui/ToggleInput';
 import AlertBanner from '@/components/ui/AlertBanner';
 import { guardarRegistro, fechaHoy } from '@/lib/db';
+import historyLib from '@/lib/history';
 import { evaluarPeso, evaluarPresion, evaluarFrecuenciaCardiaca, procesarAlerta } from '@/lib/rules';
 
 export default function CardiorrenalPage() {
@@ -61,6 +62,12 @@ export default function CardiorrenalPage() {
       datos: { peso, sistolica, diastolica, fc, hinchazon },
       timestamp: Date.now(),
     });
+    try {
+      await historyLib.addHistory('cardiorrenal registrado', { peso, sistolica, diastolica, fc, hinchazon, fecha: fechaHoy() });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('No se pudo guardar historial cardiorrenal:', e);
+    }
     setGuardado(true);
   }, [peso, sistolica, diastolica, fc, hinchazon]);
 
