@@ -5,12 +5,9 @@ import { usePathname } from 'next/navigation';
 
 const navItems = [
   { href: '/', label: 'Inicio', icon: '🏠' },
-  { href: '/respiratorio', label: 'Respirar', icon: '🫁' },
-  { href: '/ejercicio', label: 'Ejercicio', icon: '🚶' },
-  { href: '/cardiorrenal', label: 'Corazón', icon: '❤️' },
   { href: '/medicacion', label: 'Medicina', icon: '💊' },
   { href: '/nutricion', label: 'Nutrición', icon: '🥗' },
-  { href: '/mental', label: 'Mente', icon: '🧘' },
+  { href: '/settings', label: 'Ajustes', icon: '⚙️' },
 ];
 
 export default function BottomNav() {

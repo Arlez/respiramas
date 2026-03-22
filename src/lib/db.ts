@@ -1,9 +1,9 @@
-// Base de datos IndexedDB para Vivir Mejor
+// Base de datos IndexedDB para Respira Más
 // Almacena todos los registros de salud, medicamentos e historial offline
 
 import { initialMedications } from './initialMedications';
 
-const DB_NAME = 'vivir-mejor-db';
+const DB_NAME = 'respira-más-db';
 const DB_VERSION = 4;
 
 export interface RegistroDiario {
@@ -100,6 +100,13 @@ export function openDB(): Promise<IDBDatabase> {
           const favStore = db.createObjectStore('recetas_fav', { keyPath: 'id' });
           favStore.createIndex('categoria', 'categoria', { unique: false });
           favStore.createIndex('addedAt', 'addedAt', { unique: false });
+        }
+        
+        // Configuración de recordatorios (horarios de notificaciones)
+        if (!db.objectStoreNames.contains('recordatorios')) {
+          const recStore = db.createObjectStore('recordatorios', { keyPath: 'id' });
+          recStore.createIndex('activo', 'activo', { unique: false });
+          recStore.createIndex('horario', 'horario', { unique: false });
         }
     };
 
@@ -239,6 +246,43 @@ export function marcarAlertaLeida(alerta: Alerta): Promise<void> {
   return updateRecord('alertas', { ...alerta, leida: true });
 }
 
+// --- API de Recordatorios (configuración) ---
+
+export interface RecordatorioConfig {
+  id: string;
+  titulo: string;
+  cuerpo: string;
+  tag?: string;
+  horario: string; // "HH:MM"
+  activo: boolean;
+}
+
+export function guardarRecordatorioConfig(rec: RecordatorioConfig): Promise<void> {
+  return updateRecord('recordatorios', rec).catch(async () => {
+    const db = await openDB();
+    return new Promise<void>((resolve, reject) => {
+      const tx = db.transaction('recordatorios', 'readwrite');
+      const store = tx.objectStore('recordatorios');
+      const req = store.add(rec);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  });
+}
+
+export function eliminarRecordatorioConfig(id: string): Promise<void> {
+  return deleteRecord('recordatorios', id as any);
+}
+
+export function obtenerRecordatoriosConfig(): Promise<RecordatorioConfig[]> {
+  return getAllRecords('recordatorios');
+}
+
+export async function obtenerRecordatoriosActivos(): Promise<RecordatorioConfig[]> {
+  const all = await obtenerRecordatoriosConfig();
+  return all.filter((r) => r.activo);
+}
+
 // --- Utilidades ---
 
 export function fechaHoy(): string {
@@ -373,5 +417,26 @@ export function obtenerFavoritasPorCategoria(cat: 'desayuno' | 'almuerzo' | 'cen
 export async function esFavorita(id: string): Promise<boolean> {
   const all = await getAllRecords<FavoritaRecord>('recetas_fav');
   return all.some((f) => f.id === id);
+}
+
+export async function verificarYRecrearDB(): Promise<void> {
+  const db = await openDB();
+  const storeNames = Array.from(db.objectStoreNames as any as string[]);
+
+  if (!storeNames.includes('recordatorios')) {
+    console.warn('La store "recordatorios" no existe. Se procederá a recrear la base de datos.');
+
+    // Cerrar la base de datos actual
+    db.close();
+
+    // Eliminar la base de datos
+    await new Promise<void>((resolve, reject) => {
+      const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
+      deleteRequest.onsuccess = () => resolve();
+      deleteRequest.onerror = () => reject(deleteRequest.error);
+    });
+
+    console.log('Base de datos eliminada. Se recreará automáticamente al recargar.');
+  }
 }
 

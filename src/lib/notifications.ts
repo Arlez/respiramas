@@ -1,4 +1,4 @@
-// Sistema de notificaciones para Vivir Mejor
+// Sistema de notificaciones para Respira Más
 // Maneja permisos, registro del SW y envío de notificaciones locales
 
 export async function registrarServiceWorker(): Promise<ServiceWorkerRegistration | null> {
@@ -107,28 +107,56 @@ export function cancelarTodosLosRecordatorios(): void {
 }
 
 // Programar recordatorios fijos de la app
-export function iniciarRecordatoriosFijos(): void {
-  programarRecordatorioDiario(
-    'ejercicio-manana',
-    '🫁 Hora de respirar',
-    'Es momento de tu ejercicio respiratorio matutino',
-    '09:00',
-    'respiratorio'
-  );
+import { obtenerRecordatoriosConfig, guardarRecordatorioConfig } from './db';
 
-  programarRecordatorioDiario(
-    'ejercicio-tarde',
-    '🚶 Caminata suave',
-    'Hora de tu caminata por intervalos',
-    '17:00',
-    'ejercicio'
-  );
+export async function iniciarRecordatoriosFijos(): Promise<void> {
+  try {
+    const configs = await obtenerRecordatoriosConfig();
+    // Si no hay configs en DB, sembrar los valores por defecto
+    if (!configs || configs.length === 0) {
+      const defaults = [
+        { id: 'ejercicio-manana', titulo: '🫁 Hora de respirar', cuerpo: 'Es momento de tu ejercicio respiratorio matutino', horario: '09:00', tag: 'respiratorio', activo: true },
+        { id: 'ejercicio-tarde', titulo: '🚶 Caminata suave', cuerpo: 'Hora de tu caminata por intervalos', horario: '17:00', tag: 'ejercicio', activo: true },
+        { id: 'registro-noche', titulo: '📊 Registro diario', cuerpo: '¿Ya registraste tu peso, presión y cómo te sientes?', horario: '20:00', tag: 'registro', activo: true },
+      ];
+      for (const d of defaults) {
+        try { await guardarRecordatorioConfig(d as any); } catch (e) { /* ignore */ }
+      }
+    }
 
-  programarRecordatorioDiario(
-    'registro-noche',
-    '📊 Registro diario',
-    '¿Ya registraste tu peso, presión y cómo te sientes?',
-    '20:00',
-    'registro'
-  );
+    const finalConfigs = await obtenerRecordatoriosConfig();
+    // Programar cada recordatorio activo
+    finalConfigs.forEach((c) => {
+      if (c.activo) {
+        programarRecordatorioDiario(c.id, c.titulo, c.cuerpo, c.horario, c.tag ?? 'general');
+      } else {
+        cancelarRecordatorio(c.id);
+      }
+    });
+  } catch (e) {
+    // si algo falla, mantener comportamiento antiguo (no bloquear)
+    programarRecordatorioDiario(
+      'ejercicio-manana',
+      '🫁 Hora de respirar',
+      'Es momento de tu ejercicio respiratorio matutino',
+      '09:00',
+      'respiratorio'
+    );
+
+    programarRecordatorioDiario(
+      'ejercicio-tarde',
+      '🚶 Caminata suave',
+      'Hora de tu caminata por intervalos',
+      '17:00',
+      'ejercicio'
+    );
+
+    programarRecordatorioDiario(
+      'registro-noche',
+      '📊 Registro diario',
+      '¿Ya registraste tu peso, presión y cómo te sientes?',
+      '20:00',
+      'registro'
+    );
+  }
 }

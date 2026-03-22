@@ -1,4 +1,4 @@
-// Datos de nutrición para Vivir Mejor
+// Datos de nutrición para Respira Más
 // Las recetas son generadas por IA (OpenRouter) vía /api/recetas
 
 interface Receta {

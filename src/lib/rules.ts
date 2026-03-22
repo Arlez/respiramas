@@ -1,4 +1,4 @@
-// Motor de reglas de alerta clínica para Vivir Mejor
+// Motor de reglas de alerta clínica para Respira Más
 // Evalúa métricas y genera alertas automáticas
 
 import { crearAlerta, fechaHoy, obtenerRegistrosPorTipo, type RegistroDiario } from './db';

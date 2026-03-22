@@ -409,7 +409,7 @@ export default function NutricionPage() {
 
             {!cargandoRecetas && !errorRecetas && (
               <>
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-3">
                   <Button fullWidth onClick={async () => { setSelectedCategoria('desayuno'); await cargarRecetasCategoria('desayuno'); }}>
                     🌅 Desayuno
                   </Button>

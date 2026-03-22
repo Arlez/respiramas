@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Header from '@/components/Header';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -11,7 +11,16 @@ import { guardarRegistro, fechaHoy } from '@/lib/db';
 import { evaluarPeso, evaluarPresion, evaluarFrecuenciaCardiaca, procesarAlerta } from '@/lib/rules';
 
 export default function CardiorrenalPage() {
-  const [peso, setPeso] = useState(70);
+  // Peso de referencia del usuario: cargar de localStorage y por defecto 55 kg
+  const [peso, setPesoState] = useState<number>(55);
+  const setPeso = (v: number) => {
+    setPesoState(v);
+    try {
+      localStorage.setItem('userPeso', String(v));
+    } catch (e) {
+      // ignore
+    }
+  };
   const [sistolica, setSistolica] = useState(120);
   const [diastolica, setDiastolica] = useState(80);
   const [fc, setFc] = useState(72);
@@ -54,6 +63,23 @@ export default function CardiorrenalPage() {
     });
     setGuardado(true);
   }, [peso, sistolica, diastolica, fc, hinchazon]);
+
+  // On mount: load stored reference weight if exists
+  useEffect(() => {
+    try {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('userPeso') : null;
+      if (stored) {
+        const n = Number(stored);
+        if (!Number.isNaN(n)) setPesoState(n);
+      } else {
+        // initialize default 55 kg
+        if (typeof window !== 'undefined') localStorage.setItem('userPeso', '55');
+        setPesoState(55);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   return (
     <>

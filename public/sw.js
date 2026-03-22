@@ -59,7 +59,7 @@ self.addEventListener('fetch', (event) => {
 
 // Push notifications
 self.addEventListener('push', (event) => {
-  let data = { title: 'Vivir Mejor', body: 'Tienes un recordatorio', tag: 'general' };
+  let data = { title: 'Respira Más', body: 'Tienes un recordatorio', tag: 'general' };
 
   if (event.data) {
     try {
@@ -117,7 +117,7 @@ self.addEventListener('periodicsync', (event) => {
 
 async function checkAndSendReminders() {
   // Este handler se activa periódicamente para verificar recordatorios pendientes
-  self.registration.showNotification('Vivir Mejor', {
+  self.registration.showNotification('Respira Más', {
     body: '¿Ya registraste tus métricas de hoy?',
     icon: '/icons/icon-192.svg',
     tag: 'registro',

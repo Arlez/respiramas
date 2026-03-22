@@ -32,6 +32,7 @@ const MODULOS: ModuloAcceso[] = [
   { href: '/medicacion', nombre: 'Medicación', icono: '💊', descripcion: 'Control de medicamentos', color: 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100' },
   { href: '/nutricion', nombre: 'Nutrición', icono: '🥗', descripcion: 'Alimentos y recetas', color: 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100' },
   { href: '/mental', nombre: 'Mente', icono: '🧘', descripcion: 'Relajación y bienestar', color: 'bg-purple-50 border-purple-200 hover:bg-purple-100' },
+  { href: '/planificacion', nombre: 'Planificación', icono: '🗓️', descripcion: 'Horario diario: medicación, ejercicio, comidas', color: 'bg-gray-50 border-gray-200 hover:bg-gray-100' },
 ];
 
 const CONSEJOS = [
@@ -90,7 +91,7 @@ export default function HomePage() {
       {/* Saludo */}
       <div className="bg-green-600 text-white rounded-2xl p-5 shadow-md">
         <h1 className="text-2xl font-bold">{saludo} 👋</h1>
-        <p className="text-green-100 text-lg mt-1">Vivir Mejor — Su guía de salud diaria</p>
+        <p className="text-green-100 text-lg mt-1">Respira Más — Su guía de salud diaria</p>
         <p className="text-green-200 text-sm mt-2">
           📅 {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>

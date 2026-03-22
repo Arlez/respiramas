@@ -4,7 +4,7 @@ import BottomNav from "@/components/BottomNav";
 import PWARegister from "@/components/PWARegister";
 
 export const metadata: Metadata = {
-  title: "Vivir Mejor",
+  title: "Respira Más",
   description: "Monitoreo y guía diaria para pacientes con enfermedades crónicas",
   manifest: "/manifest.json",
   appleWebApp: {
