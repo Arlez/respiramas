@@ -297,12 +297,30 @@ input[type="range"]::-webkit-slider-thumb {
   color: var(--fg);
 }
 
-@media (min-width: 768px) {
-  .historial-grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 16px;
-  }
+.historial-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+/* Mantener siempre apilamiento vertical: una sola columna */
+
+.historial-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.historial-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  flex-shrink: 0;
 }
 
 /* ─── Dark mode: overrides de clases Tailwind comunes ─── */

@@ -106,7 +106,7 @@ export default function HistorialPage() {
                 </div>
               </div>
 
-              <div className="mb-4 grid grid-cols-3 gap-2">
+              <div className="mb-4 historial-chips">
                 {['respiratorio','ejercicio','cardiorrenal','energia','medicacion','mental'].map((t) => (
                   <div key={t} className={`historial-chip ${summary.typesCompleted.includes(t) ? 'historial-chip--done' : 'historial-chip--todo'}`}>
                     <div>{summary.typesCompleted.includes(t) ? '✅' : '⬜'}</div>
@@ -115,21 +115,7 @@ export default function HistorialPage() {
                 ))}
               </div>
 
-              <div className="historial-card">
-                <h3 className="font-semibold mb-2">Registros</h3>
-                {summary.registros.length === 0 ? (
-                  <p className="text-sm text-gray-500">No hay registros detallados para este día.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {summary.registros.map((r: any) => (
-                      <li key={r.id} className="historial-record">
-                        <div className="text-sm text-gray-500">{r.tipo} · {new Date(r.timestamp).toLocaleTimeString()}</div>
-                        <pre className="text-xs mt-2 overflow-auto">{JSON.stringify(r.datos ?? {}, null, 2)}</pre>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              {/* Tarjeta 'Registros' eliminada por solicitud del usuario */}
             </div>
 
             <aside>

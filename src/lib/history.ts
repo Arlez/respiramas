@@ -139,11 +139,14 @@ export async function getDailySummary(date: string): Promise<DailySummary> {
   const cumplimiento = await obtenerCumplimientoPorFecha(date);
   const medTaken = cumplimiento.filter((c: any) => c.tomado).length;
 
-  const medPercentage = medExpected > 0 ? Math.round((medTaken / medExpected) * 100) : (tiposPresentes.has('medicacion') ? 100 : 0);
-  const medCompleted = medExpected === 0 ? tiposPresentes.has('medicacion') : medTaken >= medExpected;
+  const medPercentage = medExpected > 0 ? Math.round((medTaken / medExpected) * 100) : 0;
+  // Considerar medicación completada sólo si se alcanzó 100% de las dosis esperadas.
+  const medCompleted = medExpected > 0 ? medPercentage === 100 : false;
 
   const typesCompleted = new Set<string>([...tiposPresentes]);
-  if (!typesCompleted.has('medicacion') && medCompleted) typesCompleted.add('medicacion');
+  // Asegurar que 'medicacion' sólo esté en typesCompleted si medCompleted es true
+  if (medCompleted) typesCompleted.add('medicacion');
+  else typesCompleted.delete('medicacion');
 
   const percentage = Math.round((Array.from(typesCompleted).length / ALL_TYPES.length) * 100);
 
