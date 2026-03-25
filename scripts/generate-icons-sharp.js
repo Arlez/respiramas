@@ -17,11 +17,21 @@ const sizes = [16, 32, 48, 64, 96, 128, 192, 256, 512];
 
 (async () => {
   try {
+    // Recortar espacio en blanco del logo fuente para que ocupe más espacio en los iconos
+    const trimmedBuf = await sharp(source)
+      .trim({ background: '#ffffff', threshold: 10 })
+      .png()
+      .toBuffer();
+    console.log('Trimmed whitespace from source logo');
+
     const generated = [];
     for (const size of sizes) {
       const outName = `favicon-${size}.png`;
       const outPath = path.join(publicDir, outName);
-      await sharp(source).resize(size, size).png().toFile(outPath);
+      await sharp(trimmedBuf)
+        .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .png()
+        .toFile(outPath);
       console.log('Wrote', outPath);
       generated.push(outPath);
     }
@@ -41,8 +51,8 @@ const sizes = [16, 32, 48, 64, 96, 128, 192, 256, 512];
     }
 
     // Crear icon-192.png y icon-512.png (algunas PWA esperan estos nombres)
-    await sharp(source).resize(192, 192).png().toFile(path.join(publicDir, 'icon-192.png'));
-    await sharp(source).resize(512, 512).png().toFile(path.join(publicDir, 'icon-512.png'));
+    await sharp(trimmedBuf).resize(192, 192, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toFile(path.join(publicDir, 'icon-192.png'));
+    await sharp(trimmedBuf).resize(512, 512, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toFile(path.join(publicDir, 'icon-512.png'));
     console.log('Wrote icon-192.png and icon-512.png');
 
     // Generar splash screens (fondo theme color + logo centrado)
@@ -63,8 +73,8 @@ const sizes = [16, 32, 48, 64, 96, 128, 192, 256, 512];
 
     const themeColor = '#16a34a';
     for (const s of splashSizes) {
-      const logoWidth = Math.round(s.w * 0.45);
-      const logoBuf = await sharp(source).resize(logoWidth, null).png().toBuffer();
+      const logoWidth = Math.round(s.w * 0.60);
+      const logoBuf = await sharp(trimmedBuf).resize(logoWidth, null).png().toBuffer();
       const splash = await sharp({
         create: {
           width: s.w,

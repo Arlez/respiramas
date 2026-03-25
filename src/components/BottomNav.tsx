@@ -16,7 +16,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 z-50 safe-bottom">
-      <div className="flex justify-around items-center max-w-lg mx-auto">
+      <div className="flex justify-around items-center max-w-3xl mx-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -24,7 +24,7 @@ export default function BottomNav() {
               key={item.href}
               href={item.href}
               className={`
-                flex flex-col items-center py-2 px-1 min-w-[60px] transition-colors
+                flex flex-col items-center py-2 px-1 min-w-[60px] min-h-[60px] justify-center transition-colors
                 ${isActive ? 'text-green-600' : 'text-gray-500 hover:text-gray-700'}
               `}
               aria-current={isActive ? 'page' : undefined}

@@ -72,7 +72,7 @@ export default function RootLayout({
         <ThemeProvider />
         <PWARegister />
         <MigrateMedTimes />
-        <main className="flex-1 pb-20 max-w-lg mx-auto w-full">
+        <main className="flex-1 pb-20 max-w-3xl mx-auto w-full">
           {children}
         </main>
         <BottomNav />

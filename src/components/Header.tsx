@@ -31,7 +31,7 @@ export default function Header({ titulo, mostrarVolver = false, onVolver }: Head
 
   return (
     <header className="sticky top-0 bg-green-600 text-white z-40 shadow-md">
-      <div className="max-w-lg mx-auto flex items-center px-4 py-3 gap-3">
+      <div className="max-w-3xl mx-auto flex items-center px-4 py-3 gap-3">
         {mostrarVolver && (
           <button
             onClick={handleVolver}

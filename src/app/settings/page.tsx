@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
+import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
 import { obtenerRecordatoriosConfig, guardarRecordatorioConfig, eliminarRecordatorioConfig } from '@/lib/db';
-import { iniciarRecordatoriosFijos, cancelarRecordatorio } from '@/lib/notifications';
+import { iniciarRecordatoriosFijos, cancelarRecordatorio, registrarServiceWorker, solicitarPermisoNotificaciones, enviarNotificacionLocal } from '@/lib/notifications';
 
 type RecConfig = {
   id: string;
@@ -21,6 +23,8 @@ export default function SettingsPage() {
   const [newCuerpo, setNewCuerpo]   = useState('Hora de tu caminata por intervalos');
   const [darkMode, setDarkMode]     = useState(false);
   const [addOpen, setAddOpen]       = useState(false);
+  const [notifStatus, setNotifStatus] = useState<string>(() => (typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported'));
+  const [notifBusy, setNotifBusy] = useState(false);
 
   /* ── Cargar recordatorios ── */
   const load = async () => {
@@ -83,25 +87,38 @@ export default function SettingsPage() {
   };
 
   /* ── helpers visuales ── */
-  const cardBase = 'rounded-2xl border p-4 bg-white border-gray-200 shadow-sm';
-  const labelCls = 'block text-sm font-semibold text-gray-600 mb-1';
-  const inputCls = 'w-full rounded-xl border border-gray-300 px-3 py-2.5 text-base bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400';
+  const inputCls = 'w-full rounded-xl border-2 border-gray-200 px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-green-400';
+
+  /* ── Notificaciones push (manual) ── */
+  const activarNotificaciones = async () => {
+    if (typeof window === 'undefined') return;
+    setNotifBusy(true);
+    try {
+      await registrarServiceWorker();
+      const granted = await solicitarPermisoNotificaciones();
+      setNotifStatus(granted ? 'granted' : Notification.permission ?? 'default');
+      if (granted) {
+        // Iniciar recordatorios para que las notificaciones programadas funcionen
+        await iniciarRecordatoriosFijos();
+        // enviar notificación de prueba
+        try { await enviarNotificacionLocal('Notificaciones activadas', 'Has activado las notificaciones desde Ajustes'); } catch (e) { /* noop */ }
+      }
+    } finally {
+      setNotifBusy(false);
+    }
+  };
 
   return (
     <>
       <Header titulo="⚙️ Ajustes" mostrarVolver />
 
-      <div className="px-4 pb-10 space-y-5 mt-3">
+      <div className="p-4 space-y-4">
 
         {/* ── Apariencia ── */}
-        <div className={cardBase}>
-          <h2 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
-            🎨 Apariencia
-          </h2>
-
+        <Card icon="🎨" title="Apariencia" color="white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold text-gray-800 text-base leading-tight">
+              <p className="font-semibold text-gray-800 text-lg leading-tight">
                 {darkMode ? '🌙 Modo Oscuro' : '☀️ Modo Claro'}
               </p>
               <p className="text-sm text-gray-500 mt-0.5">
@@ -117,14 +134,39 @@ export default function SettingsPage() {
               <span className="theme-toggle__dot" />
             </button>
           </div>
-        </div>
+        </Card>
+
+        {/* ── Notificaciones push ── */}
+        <Card icon="🔔" title="Notificaciones push" color="white">
+          <p className="text-gray-600 mb-3">
+            Estado del permiso: <span className="font-semibold text-gray-800">{notifStatus}</span>
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={activarNotificaciones}
+              disabled={notifBusy}
+              className="flex-1"
+            >
+              {notifBusy ? 'Procesando...' : 'Activar notificaciones'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={async () => {
+                if (typeof window !== 'undefined' && 'Notification' in window)
+                  setNotifStatus(Notification.permission);
+              }}
+            >
+              Actualizar
+            </Button>
+          </div>
+        </Card>
 
         {/* ── Recordatorios ── */}
-        <div className={cardBase}>
-          <h2 className="text-base font-bold text-gray-800 mb-1 flex items-center gap-2">
-            🔔 Recordatorios
-          </h2>
-          <p className="text-sm text-gray-500 mb-4">
+        <Card icon="⏰" title="Recordatorios" color="white">
+          <p className="text-gray-600 mb-4">
             Los recordatorios funcionan cuando la app tiene permiso de notificaciones.
           </p>
 
@@ -133,25 +175,25 @@ export default function SettingsPage() {
           ) : items.length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-4">No hay recordatorios configurados</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3 mb-4">
               {items.map((it) => (
                 <div
                   key={it.id}
-                  className={`rounded-xl border p-3 flex items-start gap-3 ${
+                  className={`rounded-xl border-2 p-3 flex items-start gap-3 ${
                     it.activo
                       ? 'bg-green-50 border-green-200'
                       : 'bg-gray-50 border-gray-200'
                   }`}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-800 text-sm truncate">{it.titulo}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{it.cuerpo}</p>
-                    <p className="text-xs text-gray-400 mt-1">🕐 {it.horario}</p>
+                    <p className="font-semibold text-gray-800 truncate">{it.titulo}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{it.cuerpo}</p>
+                    <p className="text-sm text-gray-400 mt-1">🕐 {it.horario}</p>
                   </div>
                   <div className="flex flex-col items-end gap-2 shrink-0">
                     <button
                       onClick={() => toggle(it)}
-                      className={`text-xs font-bold px-3 py-1.5 rounded-full transition-colors ${
+                      className={`text-sm font-bold px-3 py-1.5 rounded-full transition-colors min-h-[36px] ${
                         it.activo
                           ? 'bg-green-600 text-white hover:bg-green-700'
                           : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -161,7 +203,7 @@ export default function SettingsPage() {
                     </button>
                     <button
                       onClick={() => remove(it.id)}
-                      className="text-xs text-red-500 hover:text-red-700 px-2"
+                      className="text-sm text-red-500 hover:text-red-700 px-2 min-h-[36px]"
                     >
                       Eliminar
                     </button>
@@ -175,49 +217,43 @@ export default function SettingsPage() {
           {!addOpen ? (
             <button
               onClick={() => setAddOpen(true)}
-              className="mt-4 w-full border-2 border-dashed border-gray-300 rounded-xl py-3 text-sm font-semibold text-gray-500 hover:border-green-400 hover:text-green-600 transition-colors"
+              className="w-full border-2 border-dashed border-gray-300 rounded-xl py-3 text-base font-semibold text-gray-500 hover:border-green-400 hover:text-green-600 transition-colors min-h-[48px]"
             >
               + Agregar recordatorio
             </button>
           ) : (
-            <div className="mt-4 space-y-3 bg-gray-50 border border-gray-200 rounded-xl p-4">
-              <p className="text-sm font-bold text-gray-700">Nuevo recordatorio</p>
+            <div className="space-y-3 bg-gray-50 border-2 border-gray-200 rounded-xl p-4">
+              <p className="font-bold text-gray-700">Nuevo recordatorio</p>
               <div>
-                <label className={labelCls}>Título</label>
+                <label className="block text-sm font-semibold text-gray-600 mb-1">Título</label>
                 <input className={inputCls} value={newTitulo} onChange={(e) => setNewTitulo(e.target.value)} />
               </div>
               <div>
-                <label className={labelCls}>Mensaje</label>
+                <label className="block text-sm font-semibold text-gray-600 mb-1">Mensaje</label>
                 <input className={inputCls} value={newCuerpo} onChange={(e) => setNewCuerpo(e.target.value)} />
               </div>
               <div>
-                <label className={labelCls}>Horario</label>
+                <label className="block text-sm font-semibold text-gray-600 mb-1">Horario</label>
                 <input type="time" className={`${inputCls} w-36`} value={newHorario} onChange={(e) => setNewHorario(e.target.value)} />
               </div>
               <div className="flex gap-3 pt-1">
-                <button
-                  onClick={add}
-                  className="flex-1 bg-green-600 text-white font-bold rounded-xl py-2.5 text-sm hover:bg-green-700 active:scale-95 transition-all"
-                >
+                <Button variant="primary" size="md" onClick={add} className="flex-1">
                   Guardar
-                </button>
-                <button
-                  onClick={() => setAddOpen(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 font-bold rounded-xl py-2.5 text-sm hover:bg-gray-300 active:scale-95 transition-all"
-                >
+                </Button>
+                <Button variant="ghost" size="md" onClick={() => setAddOpen(false)} className="flex-1">
                   Cancelar
-                </button>
+                </Button>
               </div>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* ── Info de app ── */}
-        <div className={`${cardBase} text-center`}>
-          <p className="text-3xl mb-2">🫁</p>
-          <p className="font-bold text-gray-700 text-base">Respira Más</p>
-          <p className="text-xs text-gray-400 mt-1">v0.1 · Para uso personal</p>
-        </div>
+        <Card color="white" className="text-center">
+          <p className="text-4xl mb-2">🫁</p>
+          <p className="font-bold text-gray-700 text-lg">Respira Más</p>
+          <p className="text-sm text-gray-400 mt-1">v0.1 · Para uso personal</p>
+        </Card>
 
       </div>
     </>

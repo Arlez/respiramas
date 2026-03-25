@@ -117,7 +117,7 @@ export default function HomePage() {
           <div className="bg-gray-100 rounded-full h-3 overflow-hidden">
             <div
               className="bg-green-500 h-full transition-all"
-              style={{ width: `${(tiposRegistrados.size / 5) * 100}%` }}
+              style={{ width: `${(tiposRegistrados.size / TIPOS.length) * 100}%` }}
             />
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
@@ -141,7 +141,7 @@ export default function HomePage() {
       </Card>
 
       {/* Módulos */}
-      <h2 className="text-xl font-bold text-gray-800 pt-2">Módulos</h2>
+      <h2 className="text-xl font-bold text-gray-800 px-1 pt-2">🧩 Módulos</h2>
       <div className="grid grid-cols-2 gap-3">
         {MODULOS.map((mod) => (
           <Link

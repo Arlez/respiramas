@@ -172,60 +172,66 @@ export default function PlanificacionPage() {
       <>
         <Header titulo="🗓️ Planificación" mostrarVolver />
         <div className="p-4 space-y-4">
-          <Card color="white" title="Plan del día">
+          <Card icon="📋" color="white" title="Plan del día">
             <p className="text-gray-600">Aquí verás todo lo programado y las acciones con horario: medicación, recordatorios y comidas.</p>
           </Card>
 
           {loading ? (
-            <Card color="white"><p>Cargando...</p></Card>
+            <Card color="white"><p className="text-gray-500 text-center py-2">Cargando...</p></Card>
           ) : (
             bloques.map((b) => {
+              const BLOQUE_ICONOS: Record<string, string> = { Mañana: '🌅', Tarde: '☀️', Noche: '🌙' };
               const list = items.filter((it) => bloqueFromTime(it.horario) === b);
               const grouped = groupByHorario(list);
               const keys = Object.keys(grouped).sort((a, c) => timeToMinutes(a) - timeToMinutes(c));
               return (
-                <div key={b}>
-                  <h2 className="text-lg font-bold mb-2">{b}</h2>
+                <div key={b} className="space-y-2">
+                  <div className="flex items-center gap-2 px-1">
+                    <span className="text-xl">{BLOQUE_ICONOS[b]}</span>
+                    <h2 className="text-lg font-bold text-gray-700">{b}</h2>
+                  </div>
                   {list.length === 0 ? (
-                    <Card color="white"><p className="text-gray-600">No hay eventos</p></Card>
+                    <Card color="white"><p className="text-gray-500">No hay eventos en este bloque</p></Card>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {keys.map((hora) => (
-                        <div key={hora}>
-                          <div className="space-y-2">
-                            {grouped[hora].map((it) => (
-                              <Card key={it.id} color={it.tipo === 'medicamento' ? 'yellow' : it.tipo === 'recordatorio' ? 'green' : 'white'}>
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className="flex-1">
-                                    <h4 className="font-bold">{it.titulo}</h4>
-                                    {it.descripcion && <p className="text-sm text-gray-600">{it.descripcion}</p>}
-                                    <p className="text-xs text-gray-500">{it.tipo}</p>
-                                  </div>
-
+                        <div key={hora} className="space-y-2">
+                          {grouped[hora].map((it) => (
+                            <Card key={it.id} color={it.tipo === 'medicamento' ? 'yellow' : it.tipo === 'recordatorio' ? 'green' : 'white'}>
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex-1">
                                   <div className="flex items-center gap-2">
-                                    {editingId === it.id ? (
-                                      <input type="time" value={editValue} onChange={(e) => setEditValue(e.target.value)} className="p-1 border rounded w-24 md:w-28" />
-                                    ) : (
-                                      <div className="text-sm text-gray-700">{it.horario}</div>
-                                    )}
+                                    <span className="text-lg font-bold text-gray-800">{it.titulo}</span>
+                                    {doneIds[it.id] && <span className="text-green-600 text-sm font-semibold">✅ Hecho</span>}
                                   </div>
+                                  {it.descripcion && <p className="text-sm text-gray-600 mt-0.5">{it.descripcion}</p>}
+                                  <p className="text-xs text-gray-400 mt-0.5 capitalize">{it.tipo}</p>
                                 </div>
 
-                                {editingId === it.id && (
-                                  <div className="mt-3 flex gap-2">
-                                    <Button fullWidth size="md" onClick={() => saveEdit(it)}>Guardar</Button>
-                                    <Button fullWidth size="md" variant="ghost" onClick={cancelEdit}>Cancelar</Button>
-                                  </div>
-                                )}
-                                {editingId !== it.id && (
-                                  <div className="mt-3 flex justify-end gap-2">
-                                    <button onClick={() => startEdit(it.id, it.horario)} className="text-sm text-gray-600 px-2 py-1 hover:bg-gray-100 rounded">Editar</button>
-                                    <Button size="md" variant="ghost" onClick={() => toggleDone(it.id)}>{doneIds[it.id] ? 'Deshacer' : 'Hecho'}</Button>
-                                  </div>
-                                )}
-                              </Card>
-                            ))}
-                          </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {editingId === it.id ? (
+                                    <input type="time" value={editValue} onChange={(e) => setEditValue(e.target.value)} className="p-1 border-2 border-gray-200 rounded-lg w-24 text-base" />
+                                  ) : (
+                                    <span className="text-base font-semibold text-gray-700 bg-gray-100 px-2 py-1 rounded-lg">{it.horario}</span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {editingId === it.id ? (
+                                <div className="mt-3 flex gap-2">
+                                  <Button fullWidth size="md" onClick={() => saveEdit(it)}>Guardar</Button>
+                                  <Button fullWidth size="md" variant="ghost" onClick={cancelEdit}>Cancelar</Button>
+                                </div>
+                              ) : (
+                                <div className="mt-3 flex justify-end gap-2">
+                                  <button onClick={() => startEdit(it.id, it.horario)} className="text-sm text-gray-600 px-3 py-1.5 hover:bg-gray-100 rounded-lg min-h-[36px]">✏️ Editar</button>
+                                  <Button size="sm" variant={doneIds[it.id] ? 'ghost' : 'success'} onClick={() => toggleDone(it.id)}>
+                                    {doneIds[it.id] ? 'Deshacer' : 'Hecho'}
+                                  </Button>
+                                </div>
+                              )}
+                            </Card>
+                          ))}
                         </div>
                       ))}
                     </div>

@@ -1,48 +1,31 @@
-﻿'use client';
-
-import { useState, useEffect, useCallback } from 'react';
+﻿
+"use client";
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from '@/components/Header';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import AlertBanner from '@/components/ui/AlertBanner';
-import {
-  obtenerMedicamentos,
-  agregarMedicamento,
-  actualizarMedicamento,
-  eliminarMedicamento,
-  obtenerCumplimientoPorFecha,
-  obtenerRegistrosPorFechaYTipo,
-  registrarCumplimiento,
-  fechaHoy,
-  sembrarMedicamentos,
-  type Medicamento,
-  type CumplimientoMedicamento,
-} from '@/lib/db';
-import historyLib from '@/lib/history';
-import { programarRecordatorioDiario, cancelarRecordatorio } from '@/lib/notifications';
+import { obtenerMedicamentos, obtenerCumplimientoPorFecha, registrarCumplimiento, agregarMedicamento, actualizarMedicamento, eliminarMedicamento, fechaHoy, sembrarMedicamentos, obtenerRegistrosPorFechaYTipo, guardarRegistro } from '@/lib/db';
+import type { Medicamento } from '@/lib/db';
 import { detectarInteracciones, correspondeHoy, colorCategoria } from '@/lib/medications';
+import historyLib from '@/lib/history';
+import { cancelarRecordatorio, programarRecordatorioDiario } from '@/lib/notifications';
 
 type Tab = 'hoy' | 'gestionar';
-type Vista = Tab | 'form';
 
-const FRECUENCIAS = [
+const FRECUENCIAS: { value: 'daily' | 'every_other_day'; label: string }[] = [
   { value: 'daily', label: 'Diario' },
-  { value: 'every_other_day', label: 'Dia por medio' },
-] as const;
+  { value: 'every_other_day', label: 'Día por medio' },
+];
 
-const HORARIOS_RAPIDOS = ['06:00', '08:00', '12:00', '14:00', '20:00', '21:00', '22:00'];
+const HORARIOS_RAPIDOS = ['08:00', '12:00', '18:00', '21:00'];
 
-export default function MedicacionPage() {
-  const [tab, setTab] = useState<Tab>('hoy');
-  const [vista, setVista] = useState<Vista>('hoy');
-
-  const [medicamentos, setMedicamentos] = useState<Medicamento[]>([]);
-  const [cumplimiento, setCumplimiento] = useState<CumplimientoMedicamento[]>([]);
+export default function Page() {
+  const [medicamentos, setMedicamentos] = useState<any[]>([]);
+  const [cumplimiento, setCumplimiento] = useState<any[]>([]);
   const [interacciones, setInteracciones] = useState<string[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [expandido, setExpandido] = useState<number | null>(null);
-
-  const [editando, setEditando] = useState<Medicamento | null>(null);
+  const [editando, setEditando] = useState<any | null>(null);
   const [fNombre, setFNombre] = useState('');
   const [fDosis, setFDosis] = useState('');
   const [fHorarios, setFHorarios] = useState<string[]>(['08:00']);
@@ -50,9 +33,13 @@ export default function MedicacionPage() {
   const [fInstrucciones, setFInstrucciones] = useState('');
   const [fCategoria, setFCategoria] = useState('');
   const [fProposito, setFProposito] = useState('');
+  const [vista, setVista] = useState<'form' | 'hoy' | 'gestionar'>('hoy');
+  const [tab, setTab] = useState<Tab>('hoy');
   const [guardando, setGuardando] = useState(false);
+  const [expandido, setExpandido] = useState<number | null>(null);
 
   const cargarDatos = useCallback(async () => {
+    
     const [meds, cum] = await Promise.all([
       obtenerMedicamentos(),
       obtenerCumplimientoPorFecha(fechaHoy()),
@@ -60,7 +47,7 @@ export default function MedicacionPage() {
     setMedicamentos(meds);
     setCumplimiento(cum);
     setInteracciones(
-      detectarInteracciones(meds.filter((m) => m.activo).map((m) => m.catalogoId))
+      detectarInteracciones(meds.filter((m: any) => m.activo).map((m: any) => m.catalogoId))
     );
   }, []);
 
@@ -91,39 +78,51 @@ export default function MedicacionPage() {
     });
     await cargarDatos();
     try {
-      const existentes = await obtenerRegistrosPorFechaYTipo(fechaHoy(), 'medicacion');
-      if (!existentes || existentes.length === 0) {
-        // registrar un registro diario de tipo 'medicacion' para señalar que hubo toma
-        await (await import('@/lib/db')).guardarRegistro({
-          fecha: fechaHoy(),
-          tipo: 'medicacion',
-          datos: { medicamentoId: medId, horario },
-          timestamp: Date.now(),
-        });
-      }
-      try {
-        await historyLib.addHistory('medicacion tomada', { medicamentoId: medId, horario, fecha: fechaHoy() });
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.warn('No se pudo guardar historial de medicacion:', e);
+      // calcular si ya se registraron todas las tomas esperadas para hoy
+      const [meds, cum] = await Promise.all([
+        obtenerMedicamentos(),
+        obtenerCumplimientoPorFecha(fechaHoy()),
+      ]);
+      const totalTomas = meds
+        .filter((m: any) => m.activo)
+        .filter((m: any) => (m.frecuencia === 'every_other_day' ? correspondeHoy() : true))
+        .reduce((acc: number, m: any) => acc + (m.horarios?.length ?? 0), 0);
+      const tomadasHoy = cum.filter((c: any) => c.tomado).length;
+
+      if (totalTomas > 0 && tomadasHoy >= totalTomas) {
+        const existentes = await obtenerRegistrosPorFechaYTipo(fechaHoy(), 'medicacion');
+        if (!existentes || existentes.length === 0) {
+          await guardarRegistro({
+            fecha: fechaHoy(),
+            tipo: 'medicacion',
+            datos: { completado: true },
+            timestamp: Date.now(),
+          });
+          try {
+            await historyLib.addHistory('medicacion completada', { fecha: fechaHoy() });
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.warn('No se pudo guardar historial de medicacion completa:', e);
+          }
+        }
       }
     } catch (err) {
       // no bloquear la UI si falla
       // eslint-disable-next-line no-console
-      console.warn('No se pudo registrar el registro de medicacion:', err);
+      console.warn('No se pudo actualizar el registro diario de medicacion:', err);
     }
   };
 
-  const medicamentosHoy = medicamentos.filter((m) => {
+  const medicamentosHoy = medicamentos.filter((m: any) => {
     if (!m.activo) return false;
     if (m.frecuencia === 'every_other_day') return correspondeHoy();
     return true;
   });
 
-  const horariosHoy = [...new Set(medicamentosHoy.flatMap((m) => m.horarios))].sort();
-  const totalTomas = medicamentosHoy.flatMap((m) => m.horarios).length;
-  const tomasTomadas = medicamentosHoy.flatMap((m) =>
-    m.horarios.filter((h) => fueTomaRegistrada(m.id!, h))
+  const horariosHoy = [...new Set(medicamentosHoy.flatMap((m: any) => m.horarios))].sort();
+  const totalTomas = medicamentosHoy.flatMap((m: any) => m.horarios).length;
+  const tomasTomadas = medicamentosHoy.flatMap((m: any) =>
+    m.horarios.filter((h: string) => fueTomaRegistrada(m.id!, h))
   ).length;
   const porcentaje = totalTomas > 0 ? Math.round((tomasTomadas / totalTomas) * 100) : 0;
 
@@ -131,9 +130,9 @@ export default function MedicacionPage() {
     const actualizado = { ...med, activo: !med.activo };
     await actualizarMedicamento(actualizado);
     if (med.activo && med.id) {
-      med.horarios.forEach((h) => cancelarRecordatorio(`med-${med.id}-${h}`));
+      med.horarios.forEach((h: string) => cancelarRecordatorio(`med-${med.id}-${h}`));
     } else if (!med.activo && med.id) {
-      med.horarios.forEach((h) => {
+      med.horarios.forEach((h: string) => {
         programarRecordatorioDiario(
           `med-${med.id}-${h}`,
           'Hora de su medicamento',
@@ -148,7 +147,7 @@ export default function MedicacionPage() {
 
   const borrar = async (med: Medicamento) => {
     if (!med.id) return;
-    med.horarios.forEach((h) => cancelarRecordatorio(`med-${med.id}-${h}`));
+    med.horarios.forEach((h: string) => cancelarRecordatorio(`med-${med.id}-${h}`));
     await eliminarMedicamento(med.id);
     await cargarDatos();
   };
@@ -196,7 +195,7 @@ export default function MedicacionPage() {
     };
 
     if (editando?.id) {
-      editando.horarios.forEach((h) => cancelarRecordatorio(`med-${editando.id}-${h}`));
+      editando.horarios.forEach((h: string) => cancelarRecordatorio(`med-${editando.id}-${h}`));
       await actualizarMedicamento({ ...campos, id: editando.id });
       if (campos.activo) {
         fHorarios.forEach((h) => {
@@ -241,7 +240,7 @@ export default function MedicacionPage() {
   if (cargando) {
     return (
       <>
-        <Header titulo="Medicacion" mostrarVolver />
+      <Header titulo="💊 Medicación" mostrarVolver />
         <div className="flex items-center justify-center h-64">
           <p className="text-gray-400 text-lg">Cargando medicamentos...</p>
         </div>
@@ -251,7 +250,7 @@ export default function MedicacionPage() {
 
   return (
     <>
-      <Header titulo="Medicacion" mostrarVolver />
+      <Header titulo="💊 Medicación" mostrarVolver />
       <div className="p-4 space-y-4 pb-32">
 
         {vista === 'form' && (
@@ -463,25 +462,21 @@ export default function MedicacionPage() {
                             key={med.id}
                             onClick={() => !tomado && registrarToma(med.id!, h)}
                             disabled={tomado}
-                            className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 mb-2 transition-all text-left ${
+                            className={`w-full flex flex-wrap items-start gap-3 p-4 rounded-2xl border-2 mb-2 transition-all text-left ${
                               tomado
                                 ? 'bg-green-50 border-green-300 cursor-default'
                                 : 'bg-white border-gray-200 hover:border-blue-400'
                             }`}
                           >
-                            <span className="text-2xl flex-shrink-0">
-                              {tomado ? 'ok' : 'pend'}
+                            <span className="text-2xl flex-shrink-0 mt-1" aria-hidden>
+                              {tomado ? '✅' : '🕒'}
                             </span>
                             <div className="flex-1 min-w-0">
-                              <p className="font-bold text-gray-800 leading-tight">
+                              <p className="text-lg font-bold text-gray-800 leading-normal">
                                 {med.nombre}
                               </p>
-                              <p className="text-sm text-gray-500">{med.dosis}</p>
-                              {med.instrucciones && (
-                                <p className="text-xs text-blue-600 mt-0.5">
-                                  {med.instrucciones}
-                                </p>
-                              )}
+                              <p className="text-sm text-gray-500 mt-1">{med.dosis}</p>
+                              {/* instrucciones: ahora se muestran en una línea separada que ocupa todo el ancho */}
                             </div>
                             <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
                               {med.frecuencia === 'every_other_day' && (
@@ -506,6 +501,11 @@ export default function MedicacionPage() {
                                 {tomado ? 'Tomado' : 'Pendiente'}
                               </span>
                             </div>
+                            {med.instrucciones && (
+                              <p className="w-full text-sm text-blue-600 mt-3 leading-relaxed break-words">
+                                {med.instrucciones}
+                              </p>
+                            )}
                           </button>
                         );
                       })}
@@ -622,11 +622,11 @@ export default function MedicacionPage() {
                               Advertencias
                             </p>
                             <ul className="space-y-1">
-                              {med.advertencias.map((a, i) => (
-                                <li key={i} className="text-sm text-orange-700 flex gap-1">
-                                  <span>-</span><span>{a}</span>
-                                </li>
-                              ))}
+                                              {med.advertencias.map((a: string, i: number) => (
+                                              <li key={i} className="text-sm text-orange-700 flex gap-1">
+                                                <span>-</span><span>{a}</span>
+                                              </li>
+                                            ))}
                             </ul>
                           </div>
                         )}
