@@ -144,7 +144,7 @@ export default function HistorialPage() {
               <div className="bg-gray-100 rounded-full h-3 overflow-hidden">
                 <div className="bg-green-500 h-full transition-all" style={{ width: `${summary.percentage}%` }} />
               </div>
-              {summary.medExpected > 0 && (
+              {(summary.medExpected ?? 0) > 0 && (
                 <p className="text-sm text-gray-500 mt-3">
                   💊 Medicinas tomadas: {summary.medTaken} / {summary.medExpected} ({summary.medPercentage}%)
                 </p>
