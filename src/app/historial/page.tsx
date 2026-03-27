@@ -1,223 +1,318 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Header from '@/components/Header';
-import Card from '@/components/ui/Card';
-import { getDailySummary, getSummariesForRange, DailySummary } from '@/lib/history';
-import { fechaHoy } from '@/lib/db';
+import Button from '@/components/ui/Button';
+import {
+  obtenerRegistrosPorFecha,
+  fechaHoy,
+  type RegistroDiario,
+} from '@/lib/db';
 
-type View = 'day' | 'week' | 'month';
+/* ════════════════════════════════════════════════════════════════
+   CONSTANTES
+   ════════════════════════════════════════════════════════════════ */
 
-const TIPO_ICONOS: Record<string, string> = {
-  respiratorio: '🫁',
-  ejercicio: '🚶',
-  cardiorrenal: '❤️',
-  energia: '⚡',
-  medicacion: '💊',
-  mental: '🧘',
-};
+const CHECKS_KEY = 'protocolo-checks';
 
-const TIPO_NOMBRES: Record<string, string> = {
-  respiratorio: 'Respiratorio',
-  ejercicio: 'Ejercicio',
-  cardiorrenal: 'Corazón y Riñón',
-  energia: 'Energía',
-  medicacion: 'Medicación',
-  mental: 'Mente',
-};
+function todayStr() { return new Date().toISOString().slice(0, 10); }
 
-const TIPOS = ['respiratorio', 'ejercicio', 'cardiorrenal', 'energia', 'medicacion', 'mental'];
-
-const VIEW_LABELS: Record<View, string> = { day: 'Día', week: 'Semana', month: 'Mes' };
-
-function formatDateLabel(d: string) {
-  const dt = new Date(d + 'T00:00:00');
-  return dt.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: 'short' });
+function getChecksForDate(date: string): Record<string, boolean> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const p = JSON.parse(localStorage.getItem(CHECKS_KEY) || '{}');
+    if (p._date === date) {
+      const { _date, ...rest } = p;
+      return rest;
+    }
+    return {};
+  } catch { return {}; }
 }
 
-function MiniLineChart({ data }: { data: DailySummary[] }) {
-  const w = 600;
-  const h = 120;
-  if (data.length === 0) return null;
-  const stepX = w / Math.max(1, data.length - 1);
-  const points = data.map((d, i) => `${i * stepX},${h - (d.percentage / 100) * h}`).join(' ');
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-28">
-      <polyline fill="none" stroke="#16a34a" strokeWidth={3} points={points} strokeLinecap="round" strokeLinejoin="round" />
-      {data.map((d, i) => (
-        <circle key={d.date} cx={i * stepX} cy={h - (d.percentage / 100) * h} r={5} fill="#15803d" />
-      ))}
-    </svg>
-  );
+function formatDate(d: string) {
+  const dt = new Date(d + 'T12:00:00');
+  return dt.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
+
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+}
+
+function getLast7Days(today: string): string[] {
+  const days: string[] = [];
+  for (let i = 6; i >= 0; i--) days.push(addDays(today, -i));
+  return days;
+}
+
+const SINTOMA_LABELS: Record<string, { label: string; positiveIsGood: boolean }> = {
+  hinchazon:    { label: '🦶 Hinchazón pies/tobillos', positiveIsGood: false },
+  tos:          { label: '😷 Tos excesiva',            positiveIsGood: false },
+  disnea:       { label: '😮‍💨 Dificultad respirar',    positiveIsGood: false },
+  manchas:      { label: '🟣 Manchas moradas nuevas',  positiveIsGood: false },
+  flema_sangre: { label: '🩸 Flema con sangre',        positiveIsGood: false },
+  mareo:        { label: '💫 Mareos o debilidad',       positiveIsGood: false },
+  apetito:      { label: '🍽️ Comió bien',              positiveIsGood: true },
+  sueno:        { label: '😴 Durmió bien',             positiveIsGood: true },
+};
+
+const TAREAS_PROTOCOLO: Record<string, string> = {
+  d1: '🫁 Respiración Dorada',
+  d2: '📋 Control de Signos Vitales',
+  d3: '💊 Desayuno + Medicación AM',
+  d4: '🫁 Respiración Diafragmática',
+  d5: '🚶 Movilidad en Silla',
+  n1: '🍽️ Almuerzo Cardiorrenal',
+  n2: '😴 Siesta Obligatoria',
+  n3: '🫁 Limpieza Bronquial',
+  n4: '🚶 Caminata Terapéutica',
+  c1: '🧘 Colación y Meditación',
+  c2: '🍽️ Cena Ligera',
+  c3: '📝 Registro de Síntomas',
+  c4: '🫁 Respiración Labios Fruncidos',
+  c5: '💊 Medicación de Noche',
+};
+
+/* ════════════════════════════════════════════════════════════════
+   COMPONENTE
+   ════════════════════════════════════════════════════════════════ */
 
 export default function HistorialPage() {
-  const [view, setView] = useState<View>('day');
-  const [date, setDate] = useState<string>(fechaHoy());
-  const [summary, setSummary] = useState<DailySummary | null>(null);
-  const [rangeSummaries, setRangeSummaries] = useState<DailySummary[]>([]);
+  const [fecha, setFecha] = useState(fechaHoy());
+  const [registros, setRegistros] = useState<RegistroDiario[]>([]);
+  const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, date]);
-
-  async function load() {
+  const cargar = useCallback(async (f: string) => {
     setLoading(true);
-    if (view === 'day') {
-      const s = await getDailySummary(date);
-      setSummary(s);
-      setRangeSummaries([]);
-    } else if (view === 'week') {
-      const end = date;
-      const start = (() => {
-        const d = new Date(date + 'T00:00:00');
-        d.setDate(d.getDate() - 6);
-        return d.toISOString().split('T')[0];
-      })();
-      const arr = await getSummariesForRange(start, end);
-      setRangeSummaries(arr);
-      setSummary(null);
-    } else if (view === 'month') {
-      const d = new Date(date + 'T00:00:00');
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const start = `${yyyy}-${mm}-01`;
-      const end = new Date(yyyy, d.getMonth() + 1, 0).toISOString().split('T')[0];
-      const arr = await getSummariesForRange(start, end);
-      setRangeSummaries(arr);
-      setSummary(null);
+    try {
+      const regs = await obtenerRegistrosPorFecha(f);
+      setRegistros(regs);
+      setChecks(f === todayStr() ? getChecksForDate(f) : {});
+    } catch {
+      setRegistros([]);
+      setChecks({});
     }
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => { cargar(fecha); }, [fecha, cargar]);
+
+  /* ── cálculos ── */
+  const esHoy = fecha === todayStr();
+  const signosVitales = registros.filter(r => r.tipo === 'cardiorrenal' && (r.datos as Record<string, unknown>)?.tipoRegistro === 'signos-protocolo');
+  const sintomasRegs = registros.filter(r => r.tipo === 'mental' && (r.datos as Record<string, unknown>)?.tipoRegistro === 'sintomas-protocolo');
+  const totalTareas = Object.keys(TAREAS_PROTOCOLO).length;
+  const tareasHechas = Object.entries(checks).filter(([k, v]) => v && k in TAREAS_PROTOCOLO).length;
+  const progreso = totalTareas > 0 ? Math.round((tareasHechas / totalTareas) * 100) : 0;
+  const last7 = getLast7Days(todayStr());
+
+  const irAnterior = () => setFecha(addDays(fecha, -1));
+  const irSiguiente = () => { if (fecha < todayStr()) setFecha(addDays(fecha, 1)); };
+  const toggle = (s: string) => setExpanded(expanded === s ? null : s);
 
   return (
     <>
-      <Header titulo="📜 Historial" />
+      <Header titulo="📊 Historial" />
+
       <div className="p-4 space-y-4">
 
-        {/* Controles de vista y fecha */}
-        <Card color="white">
-          <div className="flex gap-3 flex-wrap items-center">
-            <div className="flex rounded-xl overflow-hidden border-2 border-gray-200 flex-shrink-0">
-              {(['day', 'week', 'month'] as View[]).map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className={`px-4 py-2 text-sm font-semibold transition-colors min-h-[44px] ${
-                    view === v
-                      ? 'bg-green-600 text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {VIEW_LABELS[v]}
-                </button>
-              ))}
+        {/* ── Navegación de fecha ── */}
+        <div className="bg-white rounded-2xl p-4 border-2 border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between gap-2">
+            <button onClick={irAnterior} className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-2xl active:bg-gray-200" aria-label="Día anterior">◀</button>
+            <div className="text-center flex-1">
+              <p className="text-lg font-bold text-gray-800 capitalize">{formatDate(fecha)}</p>
+              {esHoy && <span className="text-sm font-semibold text-green-600">HOY</span>}
             </div>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="flex-1 min-w-[140px] rounded-xl border-2 border-gray-200 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-            />
+            <button onClick={irSiguiente} disabled={fecha >= todayStr()}
+              className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${fecha >= todayStr() ? 'bg-gray-50 text-gray-300' : 'bg-gray-100 active:bg-gray-200'}`} aria-label="Día siguiente">▶</button>
           </div>
-        </Card>
+        </div>
 
         {loading ? (
-          <Card color="white">
-            <p className="text-gray-500 text-center py-4">Cargando...</p>
-          </Card>
-        ) : view === 'day' && summary ? (
+          <div className="text-center py-12">
+            <span className="text-4xl animate-pulse">⏳</span>
+            <p className="text-gray-500 mt-2">Cargando...</p>
+          </div>
+        ) : (
           <>
-            {/* Resumen del día */}
-            <Card icon="📊" title="Resumen del día" color="green">
-              <p className="text-sm text-gray-500 mb-3">
-                {new Date(summary.date + 'T00:00:00').toLocaleDateString('es-ES', {
-                  weekday: 'long', day: 'numeric', month: 'long',
-                })}
-              </p>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-600 text-lg">Actividades completadas</span>
-                <span className="text-4xl font-bold text-green-700">{summary.percentage}%</span>
-              </div>
-              <div className="bg-gray-100 rounded-full h-3 overflow-hidden">
-                <div className="bg-green-500 h-full transition-all" style={{ width: `${summary.percentage}%` }} />
-              </div>
-              {(summary.medExpected ?? 0) > 0 && (
-                <p className="text-sm text-gray-500 mt-3">
-                  💊 Medicinas tomadas: {summary.medTaken} / {summary.medExpected} ({summary.medPercentage}%)
-                </p>
-              )}
-            </Card>
-
-            {/* Módulos del día */}
-            <Card icon="✅" title="Módulos del día" color="white">
-              <div className="flex flex-wrap gap-2">
-                {TIPOS.map((t) => {
-                  const done = summary.typesCompleted.includes(t);
+            {/* ── Mini semana ── */}
+            <div className="bg-white rounded-2xl p-4 border-2 border-gray-200 shadow-sm">
+              <h3 className="text-base font-bold text-gray-700 mb-3">Últimos 7 días</h3>
+              <div className="flex justify-between gap-1">
+                {last7.map(d => {
+                  const sel = d === fecha;
+                  const hoy = d === todayStr();
                   return (
-                    <div
-                      key={t}
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-semibold border-2 ${
-                        done
-                          ? 'bg-green-50 text-green-800 border-green-200'
-                          : 'bg-gray-50 text-gray-500 border-gray-200'
-                      }`}
-                    >
-                      <span>{TIPO_ICONOS[t]}</span>
-                      <span>{TIPO_NOMBRES[t]}</span>
-                      <span>{done ? '✅' : '⬜'}</span>
-                    </div>
+                    <button key={d} onClick={() => setFecha(d)}
+                      className={`flex-1 py-2 rounded-xl text-center transition-colors ${sel ? 'bg-green-600 text-white' : hoy ? 'bg-green-50 text-green-700 border border-green-300' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}>
+                      <p className="text-xs font-medium">{new Date(d + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'narrow' })}</p>
+                      <p className={`text-lg font-bold ${sel ? 'text-white' : ''}`}>{new Date(d + 'T12:00:00').getDate()}</p>
+                    </button>
                   );
                 })}
               </div>
-            </Card>
-          </>
-        ) : (
-          <>
-            {/* Gráfico de evolución */}
-            <Card icon="📈" title={`Evolución — ${VIEW_LABELS[view]}`} color="white">
-              <MiniLineChart data={rangeSummaries} />
-              <div className="flex gap-3 mt-3 overflow-x-auto pb-1">
-                {rangeSummaries.map((s) => (
-                  <div key={s.date} className="text-center text-xs min-w-[56px] flex-shrink-0">
-                    <div className="font-bold text-green-700">{s.percentage}%</div>
-                    <div className="text-gray-500">{formatDateLabel(s.date)}</div>
+            </div>
+
+            {/* ── Progreso protocolo (solo hoy) ── */}
+            {esHoy && tareasHechas > 0 && (
+              <div className="bg-white rounded-2xl p-5 border-2 border-gray-200 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-xl font-bold text-gray-800">📋 Protocolo de Hoy</h2>
+                  <span className="text-2xl font-black text-green-600">{progreso}%</span>
+                </div>
+                <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
+                  <div className="bg-green-500 h-full rounded-full transition-all duration-500" style={{ width: `${progreso}%` }} />
+                </div>
+                <p className="text-gray-500 text-sm mt-2">{tareasHechas} de {totalTareas} actividades</p>
+
+                <button onClick={() => toggle('checks')} className="mt-3 text-blue-600 font-semibold text-sm">
+                  {expanded === 'checks' ? '▲ Ocultar detalle' : '▶ Ver detalle'}
+                </button>
+                {expanded === 'checks' && (
+                  <div className="mt-3 space-y-1.5">
+                    {Object.entries(TAREAS_PROTOCOLO).map(([id, nombre]) => (
+                      <div key={id} className="flex items-center gap-2">
+                        <span className={`text-lg ${checks[id] ? '' : 'grayscale opacity-40'}`}>{checks[id] ? '✅' : '⬜'}</span>
+                        <span className={`text-sm ${checks[id] ? 'text-gray-700' : 'text-gray-400'}`}>{nombre}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-                {rangeSummaries.length === 0 && (
-                  <p className="text-gray-400 py-2">No hay registros para este período</p>
                 )}
               </div>
-            </Card>
+            )}
 
-            {/* Detalle por día */}
-            {rangeSummaries.length > 0 && (
-              <Card icon="📅" title="Detalle por día" color="white">
-                <div className="grid grid-cols-2 gap-2">
-                  {rangeSummaries.map((s) => (
-                    <div
-                      key={s.date}
-                      className="p-3 rounded-xl border-2 border-gray-200 bg-gray-50"
-                    >
-                      <div className="text-xs text-gray-500">
-                        {new Date(s.date + 'T00:00:00').toLocaleDateString('es-ES', {
-                          weekday: 'short', day: '2-digit', month: 'short',
-                        })}
-                      </div>
-                      <div className="font-bold text-gray-800 text-lg mt-1">{s.percentage}%</div>
-                      <div className="text-xs text-gray-500">{s.typesCompleted.length} / 6 módulos</div>
-                      <div className="bg-gray-200 rounded-full h-2 mt-2 overflow-hidden">
-                        <div className="bg-green-500 h-full" style={{ width: `${s.percentage}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
+            {/* ── Signos Vitales ── */}
+            {signosVitales.length > 0 && (
+              <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-sm overflow-hidden">
+                <button onClick={() => toggle('signos')} className="w-full flex items-center gap-3 p-4 text-left">
+                  <span className="text-3xl">❤️</span>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-gray-800">Signos Vitales</h3>
+                    <p className="text-sm text-gray-500">{signosVitales.length} registro{signosVitales.length > 1 ? 's' : ''}</p>
+                  </div>
+                  <span className="text-xl text-gray-400">{expanded === 'signos' ? '▲' : '▼'}</span>
+                </button>
+                {expanded === 'signos' && (
+                  <div className="px-4 pb-4 space-y-3">
+                    {signosVitales.map((r, i) => {
+                      const d = r.datos as Record<string, number>;
+                      const hora = new Date(r.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                      return (
+                        <div key={r.id ?? i} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                          <p className="text-xs text-gray-400 mb-3">🕐 {hora}</p>
+                          <div className="grid grid-cols-2 gap-4">
+                            {d.saturacion > 0 && (
+                              <div className="text-center bg-white rounded-xl p-3 border border-gray-100">
+                                <p className={`text-3xl font-black ${d.saturacion < 88 ? 'text-red-600' : d.saturacion < 92 ? 'text-amber-500' : 'text-green-600'}`}>{d.saturacion}<span className="text-lg">%</span></p>
+                                <p className="text-xs text-gray-500 mt-1">🫁 Saturación</p>
+                              </div>
+                            )}
+                            {d.pulso > 0 && (
+                              <div className="text-center bg-white rounded-xl p-3 border border-gray-100">
+                                <p className="text-3xl font-black text-blue-600">{d.pulso}</p>
+                                <p className="text-xs text-gray-500 mt-1">💓 Pulso bpm</p>
+                              </div>
+                            )}
+                            {(d.presionSis > 0 || d.presionDia > 0) && (
+                              <div className="text-center bg-white rounded-xl p-3 border border-gray-100">
+                                <p className="text-3xl font-black text-purple-600">{d.presionSis}<span className="text-lg text-gray-400">/</span>{d.presionDia}</p>
+                                <p className="text-xs text-gray-500 mt-1">🩺 Presión mmHg</p>
+                              </div>
+                            )}
+                            {d.peso > 0 && (
+                              <div className="text-center bg-white rounded-xl p-3 border border-gray-100">
+                                <p className="text-3xl font-black text-gray-700">{d.peso}<span className="text-lg text-gray-400">kg</span></p>
+                                <p className="text-xs text-gray-500 mt-1">⚖️ Peso</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Síntomas ── */}
+            {sintomasRegs.length > 0 && (
+              <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-sm overflow-hidden">
+                <button onClick={() => toggle('sintomas')} className="w-full flex items-center gap-3 p-4 text-left">
+                  <span className="text-3xl">📝</span>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-gray-800">Síntomas del Día</h3>
+                    <p className="text-sm text-gray-500">{sintomasRegs.length} registro{sintomasRegs.length > 1 ? 's' : ''}</p>
+                  </div>
+                  <span className="text-xl text-gray-400">{expanded === 'sintomas' ? '▲' : '▼'}</span>
+                </button>
+                {expanded === 'sintomas' && (
+                  <div className="px-4 pb-4 space-y-3">
+                    {sintomasRegs.map((r, i) => {
+                      const d = r.datos as Record<string, unknown>;
+                      const hora = new Date(r.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                      return (
+                        <div key={r.id ?? i} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                          <p className="text-xs text-gray-400 mb-3">🕐 {hora}</p>
+                          <div className="space-y-2">
+                            {Object.entries(SINTOMA_LABELS).map(([key, { label, positiveIsGood }]) => {
+                              if (d[key] === undefined) return null;
+                              const val = !!d[key];
+                              const isGood = positiveIsGood ? val : !val;
+                              return (
+                                <div key={key} className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-700">{label}</span>
+                                  <span className={`text-sm font-bold ${isGood ? 'text-green-600' : 'text-red-600'}`}>
+                                    {val ? (isGood ? '✅ Sí' : '⚠️ Sí') : (isGood ? '✅ No' : '⚠️ No')}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {d.energia !== undefined && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-gray-700">⚡ Nivel de Energía</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-20 bg-gray-200 rounded-full h-2.5">
+                                    <div className={`h-full rounded-full ${(d.energia as number) <= 3 ? 'bg-red-500' : (d.energia as number) <= 6 ? 'bg-amber-500' : 'bg-green-500'}`}
+                                      style={{ width: `${((d.energia as number) / 10) * 100}%` }} />
+                                  </div>
+                                  <span className={`text-lg font-black ${(d.energia as number) <= 3 ? 'text-red-500' : (d.energia as number) <= 6 ? 'text-amber-500' : 'text-green-500'}`}>
+                                    {d.energia as number}/10
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Sin datos ── */}
+            {signosVitales.length === 0 && sintomasRegs.length === 0 && !(esHoy && tareasHechas > 0) && (
+              <div className="bg-white rounded-2xl p-8 border-2 border-gray-200 shadow-sm text-center">
+                <span className="text-5xl">📭</span>
+                <h3 className="text-xl font-bold text-gray-700 mt-3">Sin registros</h3>
+                <p className="text-gray-500 mt-1">No hay datos guardados para este día.</p>
+                {!esHoy && (
+                  <Button variant="ghost" className="mt-4" onClick={() => setFecha(todayStr())}>
+                    Ir a hoy
+                  </Button>
+                )}
+              </div>
             )}
           </>
         )}
+
+        <div className="h-4" />
       </div>
     </>
   );

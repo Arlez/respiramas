@@ -4,9 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navItems = [
-  { href: '/', label: 'Inicio', icon: '🏠' },
-  { href: '/medicacion', label: 'Medicina', icon: '💊' },
-  { href: '/historial', label: 'Historial', icon: '📜' },
+  { href: '/', label: 'Protocolo', icon: '📋' },
+  { href: '/historial', label: 'Historial', icon: '📊' },
   { href: '/nutricion', label: 'Nutrición', icon: '🥗' },
   { href: '/settings', label: 'Ajustes', icon: '⚙️' },
 ];
