@@ -205,6 +205,18 @@ input[type="range"]::-webkit-slider-thumb {
   background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   border: 2px solid #94a3b8;
 }
+.phase-panel--activo {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+  border: 2px solid #a855f7;
+}
+.phase-panel--preparacion {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border: 2px solid #9ca3af;
+}
+.phase-panel--alerta {
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  border: 2px solid #ef4444;
+}
 
 /* ─── Dark: paneles de respiración más suaves ─── */
 .dark .phase-panel--inhalar {
@@ -222,6 +234,18 @@ input[type="range"]::-webkit-slider-thumb {
 .dark .phase-panel--descanso {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   border-color: #475569;
+}
+.dark .phase-panel--activo {
+  background: linear-gradient(135deg, #2e1065 0%, #4a1d96 100%);
+  border-color: #a855f7;
+}
+.dark .phase-panel--preparacion {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-color: #64748b;
+}
+.dark .phase-panel--alerta {
+  background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 100%);
+  border-color: #ef4444;
 }
 
 /* ─── Ocultar scrollbar ─── */

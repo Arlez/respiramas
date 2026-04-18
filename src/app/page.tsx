@@ -545,7 +545,7 @@ export default function ProtocoloPage() {
 
       {/* ══════════ MODAL EJERCICIO GUIADO ══════════ */}
       {modalEjId && ejData && (
-        <div className="fixed inset-0 z-[60] bg-gray-50 flex flex-col overflow-auto">
+        <div className="fixed inset-x-0 top-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-[60] bg-gray-50 flex flex-col overflow-auto">
           <div className="bg-green-600 text-white px-4 py-3 flex items-center gap-3 shrink-0">
             <button onClick={cerrarModal} className="text-2xl p-1 hover:bg-green-700 rounded-lg" aria-label="Cerrar">✕</button>
             <h2 className="text-lg font-bold flex-1 truncate">{ejData.nombre}</h2>
@@ -649,7 +649,7 @@ export default function ProtocoloPage() {
 
       {/* ══════════ MODAL CONTROL DE SIGNOS VITALES ══════════ */}
       {showSignos && (
-        <div className="fixed inset-0 z-[60] bg-gray-50 flex flex-col overflow-auto">
+        <div className="fixed inset-x-0 top-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-[60] bg-gray-50 flex flex-col overflow-auto">
           <div className="bg-green-600 text-white px-4 py-3 flex items-center gap-3 shrink-0">
             <button onClick={() => setShowSignos(false)} className="text-2xl p-1 hover:bg-green-700 rounded-lg" aria-label="Cerrar">✕</button>
             <h2 className="text-lg font-bold flex-1">📋 Control de Signos Vitales</h2>
@@ -718,7 +718,7 @@ export default function ProtocoloPage() {
 
       {/* ══════════ MODAL REGISTRO DE SÍNTOMAS ══════════ */}
       {showSintomas && (
-        <div className="fixed inset-0 z-[60] bg-gray-50 flex flex-col overflow-auto">
+        <div className="fixed inset-x-0 top-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-[60] bg-gray-50 flex flex-col overflow-auto">
           <div className="bg-green-600 text-white px-4 py-3 flex items-center gap-3 shrink-0">
             <button onClick={() => setShowSintomas(false)} className="text-2xl p-1 hover:bg-green-700 rounded-lg" aria-label="Cerrar">✕</button>
             <h2 className="text-lg font-bold flex-1">📝 Registro de Síntomas</h2>
@@ -793,14 +793,28 @@ export default function ProtocoloPage() {
 
         {/* Progreso */}
         <div className="bg-white rounded-2xl p-5 border-2 border-gray-200 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl font-bold text-gray-800">📊 Progreso de Hoy</h2>
-            <span className="text-2xl font-black text-green-600">{progreso}%</span>
+          <div className="flex items-center gap-4">
+            {/* Círculo de progreso */}
+            <div className="relative w-20 h-20 shrink-0">
+              <svg viewBox="0 0 36 36" className="w-20 h-20 -rotate-90">
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#e5e7eb" strokeWidth="3" />
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#22c55e" strokeWidth="3"
+                  strokeDasharray={`${progreso} ${100 - progreso}`} strokeLinecap="round"
+                  style={{ transition: 'stroke-dasharray 0.5s ease' }} />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-lg font-black text-green-600">{progreso}%</span>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-gray-800">📊 Progreso de Hoy</h2>
+              <p className="text-gray-500 text-base mt-0.5">{tareasHechas} de {totalTareas} actividades</p>
+              <p className="text-base font-semibold mt-1 text-green-700">
+                {progreso === 100 ? '🎉 ¡Protocolo completado!' : progreso >= 70 ? '💪 ¡Excelente, casi terminas!' : progreso >= 30 ? '⭐ ¡Vas muy bien, sigue así!' : progreso > 0 ? '✨ ¡Buen comienzo!' : '☀️ ¡A empezar el día!'}
+              </p>
+            </div>
           </div>
-          <div className="bg-gray-200 rounded-full h-5 overflow-hidden">
-            <div className="bg-green-500 h-full rounded-full transition-all duration-500" style={{ width: `${progreso}%` }} />
+          <div className="bg-gray-200 rounded-full h-3 overflow-hidden mt-4">
+            <div className="bg-gradient-to-r from-green-400 to-green-600 h-full rounded-full transition-all duration-500" style={{ width: `${progreso}%` }} />
           </div>
-          <p className="text-gray-500 text-base mt-2">{tareasHechas} de {totalTareas} actividades completadas</p>
         </div>
 
         {/* Bloques */}

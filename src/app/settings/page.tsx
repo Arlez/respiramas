@@ -26,6 +26,14 @@ export default function SettingsPage() {
   const [notifStatus, setNotifStatus] = useState<string>(() => (typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported'));
   const [notifBusy, setNotifBusy] = useState(false);
 
+  /* ── Datos del Paciente ── */
+  const PACIENTE_KEY = 'paciente-datos';
+  const [pNombre, setPNombre] = useState('');
+  const [pEdad, setPEdad]     = useState(0);
+  const [pPeso, setPPeso]     = useState(0);
+  const [pEstatura, setPEstatura] = useState(0);
+  const [pacienteGuardado, setPacienteGuardado] = useState(false);
+
   /* ── Cargar recordatorios ── */
   const load = async () => {
     setLoading(true);
@@ -43,7 +51,32 @@ export default function SettingsPage() {
   useEffect(() => {
     load();
     setDarkMode(document.documentElement.classList.contains('dark'));
+    // Leer datos del paciente
+    try {
+      const d = JSON.parse(localStorage.getItem(PACIENTE_KEY) || '{}');
+      if (d.nombre !== undefined) setPNombre(d.nombre ?? '');
+      if (d.edad)     setPEdad(Number(d.edad));
+      if (d.peso)     setPPeso(Number(d.peso));
+      if (d.estatura) setPEstatura(Number(d.estatura));
+    } catch {}
   }, []);
+
+  /* ── Guardar Paciente ── */
+  function guardarPaciente() {
+    localStorage.setItem(PACIENTE_KEY, JSON.stringify({ nombre: pNombre, edad: pEdad, peso: pPeso, estatura: pEstatura }));
+    setPacienteGuardado(true);
+    setTimeout(() => setPacienteGuardado(false), 2500);
+  }
+
+  /* ── Cálculos Paciente ── */
+  const imc = pPeso > 0 && pEstatura > 0 ? (pPeso / ((pEstatura / 100) ** 2)).toFixed(1) : null;
+  const imcCategoria = imc ? (
+    Number(imc) < 18.5 ? 'Bajo peso' :
+    Number(imc) < 25   ? 'Peso normal' :
+    Number(imc) < 30   ? 'Sobrepeso' : 'Obesidad'
+  ) : null;
+  const aguaML = pPeso > 0 ? Math.min(pPeso * 25, 1500) : null;
+  const vasosRecomendados = aguaML ? Math.round(aguaML / 200) : null;
 
   /* ── Toggle modo oscuro ── */
   const toggleDark = () => {
@@ -113,6 +146,83 @@ export default function SettingsPage() {
       <Header titulo="⚙️ Ajustes" mostrarVolver />
 
       <div className="p-4 space-y-4">
+
+        {/* ── Datos del Paciente ── */}
+        <Card icon="👤" title="Datos del Paciente" color="white">
+          <p className="text-gray-500 text-sm mb-4">
+            Su información se usa para personalizar recomendaciones de hidratación y otras calculaciones. Se guarda solo en este dispositivo.
+          </p>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-semibold text-gray-600 mb-1">Nombre</label>
+              <input
+                className={inputCls}
+                value={pNombre}
+                onChange={(e) => setPNombre(e.target.value)}
+                placeholder="Nombre del paciente"
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-1">Edad</label>
+                <input
+                  type="number" inputMode="numeric"
+                  className={`${inputCls} text-center px-1`}
+                  value={pEdad || ''}
+                  onChange={(e) => setPEdad(Number(e.target.value))}
+                  placeholder="años" min={0} max={120}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-1">Peso (kg)</label>
+                <input
+                  type="number" inputMode="decimal"
+                  className={`${inputCls} text-center px-1`}
+                  value={pPeso || ''}
+                  onChange={(e) => setPPeso(Number(e.target.value))}
+                  placeholder="kg" min={0} max={300} step={0.5}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-1">Estatura (cm)</label>
+                <input
+                  type="number" inputMode="numeric"
+                  className={`${inputCls} text-center px-1`}
+                  value={pEstatura || ''}
+                  onChange={(e) => setPEstatura(Number(e.target.value))}
+                  placeholder="cm" min={0} max={250}
+                />
+              </div>
+            </div>
+
+            {(imc || vasosRecomendados) && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-3 space-y-1.5">
+                {imc && (
+                  <p className="text-sm text-green-800">
+                    📊 IMC: <strong>{imc}</strong>
+                    <span className="ml-2 text-xs font-medium bg-green-200 text-green-800 px-2 py-0.5 rounded-full">{imcCategoria}</span>
+                  </p>
+                )}
+                {vasosRecomendados && (
+                  <p className="text-sm text-green-800">
+                    💧 Agua recomendada: <strong>~{vasosRecomendados} vasos/día</strong>{' '}
+                    <span className="text-green-600">(~{aguaML?.toFixed(0)} ml)</span>
+                  </p>
+                )}
+                <p className="text-xs text-gray-400">⚕️ Fórmula: 25 ml/kg, máx. 1 500 ml para pacientes cardiacos. Consulte a su médico.</p>
+              </div>
+            )}
+
+            <Button
+              variant={pacienteGuardado ? 'secondary' : 'primary'}
+              size="md"
+              fullWidth
+              onClick={guardarPaciente}
+            >
+              {pacienteGuardado ? '✅ ¡Datos guardados!' : '💾 Guardar datos del paciente'}
+            </Button>
+          </div>
+        </Card>
 
         {/* ── Apariencia ── */}
         <Card icon="🎨" title="Apariencia" color="white">

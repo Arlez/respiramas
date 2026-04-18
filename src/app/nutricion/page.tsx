@@ -17,7 +17,7 @@ import {
   esFavorita,
 } from '@/lib/db';
 
-type Seccion = 'menu' | 'alimentos' | 'recetas' | 'evitar';
+type Seccion = 'menu' | 'alimentos' | 'recetas' | 'evitar' | 'hidratacion' | 'favoritas';
 
 const SISTEMA_COLORES: Record<string, string> = {
   'corazón': 'bg-red-100 text-red-700',
@@ -85,6 +85,17 @@ function TarjetaAlimento({ alimento }: { alimento: AlimentoRecomendado }) {
       </div>
     </Card>
   );
+}
+
+/* ── hidratación helpers ── */
+const AGUA_KEY = 'nutricion-agua';
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function getVasos(): number {
+  if (typeof window === 'undefined') return 0;
+  try { const p = JSON.parse(localStorage.getItem(AGUA_KEY) || '{}'); return p._date === todayStr() ? (p.vasos ?? 0) : 0; } catch { return 0; }
+}
+function saveVasos(v: number) {
+  if (typeof window !== 'undefined') localStorage.setItem(AGUA_KEY, JSON.stringify({ vasos: v, _date: todayStr() }));
 }
 
 const MODELO_NOMBRES: Record<string, string> = {
@@ -165,6 +176,41 @@ export default function NutricionPage() {
   const [errorRecetas, setErrorRecetas] = useState<string | null>(null);
   const [selectedCategoria, setSelectedCategoria] = useState<'desayuno' | 'almuerzo' | 'cena' | null>(null);
   const [favoritasIds, setFavoritasIds] = useState<Record<string, boolean>>({});
+  const [vasos, setVasos] = useState(0);
+  const [todasFavoritas, setTodasFavoritas] = useState<Receta[]>([]);
+  const [cargandoFavs, setCargandoFavs] = useState(false);
+  const [pacientePeso, setPacientePeso] = useState(0);
+
+  // Cargar vasos y datos del paciente al inicio
+  useEffect(() => {
+    setVasos(getVasos());
+    try {
+      const d = JSON.parse(localStorage.getItem('paciente-datos') || '{}');
+      if (d.peso) setPacientePeso(Number(d.peso));
+    } catch {}
+  }, []);
+
+  // Cargar todas las favoritas cuando se entra a esa sección
+  useEffect(() => {
+    if (seccion !== 'favoritas') return;
+    setCargandoFavs(true);
+    (async () => {
+      try {
+        const [fDes, fAlm, fCen] = await Promise.all([
+          obtenerFavoritasPorCategoria('desayuno'),
+          obtenerFavoritasPorCategoria('almuerzo'),
+          obtenerFavoritasPorCategoria('cena'),
+        ]);
+        const all: Receta[] = [
+          ...((fDes || []).map((f: any) => f.receta)).filter(Boolean),
+          ...((fAlm || []).map((f: any) => f.receta)).filter(Boolean),
+          ...((fCen || []).map((f: any) => f.receta)).filter(Boolean),
+        ];
+        setTodasFavoritas(all);
+      } catch { setTodasFavoritas([]); }
+      finally { setCargandoFavs(false); }
+    })();
+  }, [seccion]);
 
   // Cargar favoritas cuando se entra a la sección de recetas
   useEffect(() => {
@@ -194,6 +240,7 @@ export default function NutricionPage() {
           delete copy[rec.id];
           return copy;
         });
+        setTodasFavoritas((prev) => prev.filter((r) => r.id !== rec.id));
       } else {
         await guardarFavorita({ id: rec.id, categoria: rec.categoria, receta: rec, addedAt: Date.now() } as any);
         setFavoritasIds((prev) => ({ ...prev, [rec.id]: true }));
@@ -282,7 +329,7 @@ export default function NutricionPage() {
 
   return (
     <>
-      <Header titulo="🥗 Nutrición" mostrarVolver onVolver={() => setSeccion('menu')} />
+      <Header titulo="🥗 Nutrición" mostrarVolver={seccion !== 'menu'} onVolver={() => setSeccion('menu')} />
       <div className="p-4 space-y-4">
         {seccion === 'menu' && (
           <>
@@ -292,26 +339,60 @@ export default function NutricionPage() {
               </p>
             </Card>
 
-            <Button fullWidth onClick={() => setSeccion('alimentos')}>
-              🥬 Alimentos Recomendados
-            </Button>
-            <p className="text-gray-500 text-center text-sm">
-              Qué comer y por qué le ayuda
-            </p>
+            {/* Hidratación resumen rápido */}
+            <button
+              onClick={() => setSeccion('hidratacion')}
+              className="w-full bg-blue-50 border-2 border-blue-300 rounded-2xl p-4 flex items-center gap-4 active:scale-95 transition-transform text-left"
+            >
+              <span className="text-4xl">💧</span>
+              <div className="flex-1">
+                <p className="text-lg font-bold text-blue-800">Hidratación de Hoy</p>
+                <p className="text-base text-blue-600">{vasos} vasos de agua</p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="text-2xl font-black text-blue-700">{vasos}<span className="text-sm font-normal text-blue-400">/7</span></p>
+                <div className="flex gap-0.5 mt-1">
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <div key={i} className={`w-2.5 h-2.5 rounded-full ${i < vasos ? 'bg-blue-500' : 'bg-blue-200'}`} />
+                  ))}
+                </div>
+              </div>
+            </button>
 
-            <Button fullWidth variant="secondary" onClick={() => setSeccion('recetas')}>
-              👩‍🍳 Recetas del Día
-            </Button>
-            <p className="text-gray-500 text-center text-sm">
-              9 recetas generadas por IA según su condición
-            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={() => setSeccion('alimentos')}
+                className="bg-green-50 border-2 border-green-300 rounded-2xl p-4 flex flex-col items-center gap-2 active:scale-95 transition-transform">
+                <span className="text-4xl">🥬</span>
+                <p className="text-base font-bold text-green-800 text-center">Alimentos Recomendados</p>
+                <p className="text-sm text-green-600 text-center">Qué comer y por qué ayuda</p>
+              </button>
+              <button onClick={() => setSeccion('evitar')}
+                className="bg-red-50 border-2 border-red-300 rounded-2xl p-4 flex flex-col items-center gap-2 active:scale-95 transition-transform">
+                <span className="text-4xl">🚫</span>
+                <p className="text-base font-bold text-red-800 text-center">Alimentos a Evitar</p>
+                <p className="text-sm text-red-600 text-center">Qué limitar o eliminar</p>
+              </button>
+            </div>
 
-            <Button fullWidth variant="secondary" onClick={() => setSeccion('evitar')}>
-              🚫 Alimentos a Evitar
-            </Button>
-            <p className="text-gray-500 text-center text-sm">
-              Alimentos que debe evitar o limitar
-            </p>
+            <button onClick={() => setSeccion('recetas')}
+              className="w-full bg-emerald-600 text-white rounded-2xl p-5 flex items-center gap-4 active:scale-95 transition-transform">
+              <span className="text-4xl">👩‍🍳</span>
+              <div className="text-left">
+                <p className="text-xl font-bold">Recetas del Día</p>
+                <p className="text-emerald-100 text-sm">Generadas por IA según su condición</p>
+              </div>
+              <span className="ml-auto text-2xl">▶</span>
+            </button>
+
+            <button onClick={() => setSeccion('favoritas')}
+              className="w-full bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-4 flex items-center gap-4 active:scale-95 transition-transform">
+              <span className="text-4xl">★</span>
+              <div className="text-left">
+                <p className="text-lg font-bold text-yellow-800">Mis Recetas Favoritas</p>
+                <p className="text-sm text-yellow-600">Las que más le gustan guardadas</p>
+              </div>
+              <span className="ml-auto text-2xl text-yellow-400">▶</span>
+            </button>
           </>
         )}
 
@@ -468,6 +549,114 @@ export default function NutricionPage() {
                 >
                   DEV: Reiniciar recetas del día
                 </Button>
+              </div>
+            )}
+
+            <Button fullWidth variant="ghost" onClick={() => setSeccion('menu')}>
+              ← Volver
+            </Button>
+          </>
+        )}
+
+        {/* ══════════ HIDRATACIÓN ══════════ */}
+        {seccion === 'hidratacion' && (
+          <>
+            <Card icon="💧" title="Hidratación de Hoy" color="white">
+              <p className="text-gray-600">
+                La hidratación adecuada cuida su corazón y riñones. Consulte a su médico la cantidad recomendada para su caso.
+              </p>
+            </Card>
+
+            {/* Contador de vasos */}
+            <div className="bg-blue-50 border-2 border-blue-300 rounded-2xl p-6 text-center">
+              <p className="text-blue-700 font-semibold text-base mb-3">Vasos de agua (aprox. 200ml c/u)</p>
+              <div className="flex justify-center flex-wrap gap-2 mb-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <button key={i} onClick={() => { const n = i + 1; setVasos(n); saveVasos(n); }}
+                    className={`text-3xl transition-transform active:scale-90 ${i < vasos ? 'opacity-100' : 'opacity-20'}`}>
+                    💧
+                  </button>
+                ))}
+              </div>
+              <p className="text-5xl font-black text-blue-700 mb-1">{vasos}</p>
+              <p className="text-blue-600 text-lg font-medium">vasos hoy (~{(vasos * 200 / 1000).toFixed(1)} L)</p>
+              <div className="flex gap-4 mt-5 justify-center">
+                <button
+                  onClick={() => { const n = Math.max(0, vasos - 1); setVasos(n); saveVasos(n); }}
+                  className="w-16 h-16 rounded-2xl bg-blue-200 text-blue-800 text-3xl font-black border-2 border-blue-400 active:scale-95 transition-transform"
+                >−</button>
+                <button
+                  onClick={() => { const n = Math.min(10, vasos + 1); setVasos(n); saveVasos(n); }}
+                  className="w-16 h-16 rounded-2xl bg-blue-600 text-white text-3xl font-black border-2 border-blue-700 active:scale-95 transition-transform"
+                >+</button>
+              </div>
+            </div>
+
+            {/* Objetivo */}
+            <div className="bg-white rounded-2xl border-2 border-gray-200 p-4">
+              <h3 className="font-bold text-gray-800 mb-2 text-lg">📋 Recomendaciones</h3>
+              <div className="space-y-2 text-base text-gray-600">
+                {pacientePeso > 0 ? (
+                  <>
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                      <p className="font-bold text-blue-800">🎯 Objetivo personalizado ({pacientePeso} kg)</p>
+                      <p className="text-blue-700 text-sm mt-1">~{Math.round(Math.min(pacientePeso * 25, 1500) / 200)} vasos/día (~{Math.min(pacientePeso * 25, 1500).toFixed(0)} ml)</p>
+                      <p className="text-xs text-gray-400 mt-1">Fórmula: 25 ml/kg, máx. 1 500 ml para cardiacos/renales.</p>
+                    </div>
+                  </>
+                ) : (
+                  <p>🟢 <strong>Objetivo general:</strong> 6–7 vasos (~1.2–1.4 L/día). Configure su peso en Ajustes para un cálculo personalizado.</p>
+                )}
+                <p>⚠️ Si tiene retención de líquidos, su médico puede indicar menos.</p>
+                <p>💡 Distribuya los vasos durante el día, no todo junto.</p>
+                <p>🚫 Evite bebidas con cafeína, alcohol o azúcar añadida.</p>
+              </div>
+            </div>
+
+            <Button fullWidth variant="ghost" onClick={() => setSeccion('menu')}>
+              ← Volver
+            </Button>
+          </>
+        )}
+
+        {/* ══════════ FAVORITAS ══════════ */}
+        {seccion === 'favoritas' && (
+          <>
+            <Card icon="★" title="Mis Recetas Favoritas" color="yellow">
+              <p className="text-gray-600">
+                Las recetas que marcó como favoritas. Se repiten en la rotación diaria.
+              </p>
+            </Card>
+
+            {cargandoFavs && (
+              <Card color="white">
+                <div className="flex items-center justify-center gap-3 py-6">
+                  <span className="text-3xl animate-spin">⌛</span>
+                  <p className="text-gray-600 text-lg">Cargando favoritas...</p>
+                </div>
+              </Card>
+            )}
+
+            {!cargandoFavs && todasFavoritas.length === 0 && (
+              <Card color="white">
+                <div className="text-center py-6">
+                  <p className="text-5xl mb-3">☆</p>
+                  <p className="text-gray-600 text-lg font-medium">No tiene recetas favoritas aún.</p>
+                  <p className="text-gray-500 text-base mt-2">Marque recetas con ★ en la sección "Recetas del Día".</p>
+                </div>
+              </Card>
+            )}
+
+            {!cargandoFavs && todasFavoritas.length > 0 && (
+              <div className="space-y-4">
+                {todasFavoritas.map((receta) => (
+                  <TarjetaReceta
+                    key={receta.id}
+                    receta={receta}
+                    isFavorita={true}
+                    onToggleFavorita={toggleFavorita}
+                  />
+                ))}
               </div>
             )}
 
