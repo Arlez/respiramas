@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Header from '@/components/Header';
+import DashboardPC from '@/components/DashboardPC';
 import Button from '@/components/ui/Button';
 import SliderInput from '@/components/ui/SliderInput';
 import { guardarRegistro, fechaHoy } from '@/lib/db';
@@ -777,7 +778,16 @@ export default function ProtocoloPage() {
       )}
 
       {/* ══════════ CONTENIDO PRINCIPAL ══════════ */}
-      <div className="p-4 space-y-4">
+      <div className="lg:flex lg:gap-6 lg:p-6">
+        {/* Dashboard solo PC (columna derecha en orden visual, pero primero en DOM para aside) */}
+        <aside className="hidden lg:block lg:w-80 xl:w-96 shrink-0 lg:order-2">
+          <div className="sticky top-6">
+            <DashboardPC />
+          </div>
+        </aside>
+
+        {/* Protocolo (columna izquierda) */}
+        <div className="flex-1 min-w-0 p-4 lg:p-0 space-y-4 lg:order-1">
         {/* Alerta de seguridad */}
         <div className="bg-red-600 text-white rounded-2xl p-5 shadow-lg border-2 border-red-700">
           <div className="flex items-start gap-3">
@@ -941,6 +951,7 @@ export default function ProtocoloPage() {
         </div>
 
         <div className="h-4" />
+      </div>
       </div>
     </>
   );

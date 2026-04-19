@@ -1,17 +1,14 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = 'vivir-mejor-v1';
+const CACHE_NAME = 'respiramas-v2';
 const OFFLINE_URL = '/';
 
 const PRECACHE_URLS = [
   '/',
-  '/respiratorio',
-  '/ejercicio',
-  '/cardiorrenal',
-  '/energia',
-  '/medicacion',
+  '/historial',
+  '/ejercicios',
   '/nutricion',
-  '/mental',
+  '/settings',
 ];
 
 // Instalación: precachear recursos
