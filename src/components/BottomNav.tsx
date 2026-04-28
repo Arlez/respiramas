@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navItems = [
-  { href: '/', label: 'Protocolo', icon: '📋' },
+  { href: '/plan', label: 'Plan', icon: '📅' },
   { href: '/historial', label: 'Historial', icon: '📊' },
   { href: '/ejercicios', label: 'Ejercicios', icon: '🏃' },
   { href: '/nutricion', label: 'Nutrición', icon: '🥗' },
