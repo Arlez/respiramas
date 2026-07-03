@@ -14,6 +14,7 @@ import {
   ModalDetalle,
   ModalInstrucciones,
 } from '../ejercicios/_shared';
+import { reprogramarAlarmasDelDia, cancelarAlarma, stringToNumberId } from '@/services/alarmService';
 
 export default function PlanPage() {
   const [ejercicioDetalle, setEjercicioDetalle] = useState<Ejercicio | null>(null);
@@ -32,12 +33,18 @@ export default function PlanPage() {
     } catch { /* noop */ }
   }, []);
 
+  useEffect(() => {
+    const bloquesActuales = getBloquesHoy(getDiaRutinaIdx(), modoFatiga);
+    reprogramarAlarmasDelDia(bloquesActuales, completados);
+  }, [completados, modoFatiga]);
+
   function marcarCompletado(id: string) {
     const key = `ejercicios-completados-${new Date().toISOString().slice(0, 10)}`;
     const nuevo = new Set(completados);
     nuevo.add(id);
     setCompletados(nuevo);
     try { localStorage.setItem(key, JSON.stringify([...nuevo])); } catch { /* noop */ }
+    cancelarAlarma(stringToNumberId(id));
   }
 
   function handleIniciar(ejercicio: Ejercicio, bloqueId?: string) {

@@ -5,6 +5,9 @@ import Header from '@/components/Header';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { ALIMENTOS_RECOMENDADOS, ALIMENTOS_EVITAR, type Receta, type AlimentoRecomendado, type AlimentoEvitar } from '@/lib/recipes-ai';
+import desayunos from '@/lib/data/desayunos.json';
+import almuerzos from '@/lib/data/almuerzos.json';
+import cenas from '@/lib/data/cenas.json';
 import {
   guardarRecetasIA,
   obtenerRecetasIA,
@@ -266,14 +269,23 @@ export default function NutricionPage() {
         return;
       }
 
-      const res = await fetch(`/api/recetas?categoria=${categoria}`);
-      if (!res.ok) {
-        const t = await res.text().catch(() => '');
-        throw new Error(t || 'No se pudieron cargar las recetas');
-      }
-      const data = await res.json();
-      // Soportar respuesta antigua { recetas: [...] } y nueva { receta: {...} }
-      const fetchedArr: Receta[] = data.recetas ?? (data.receta ? [data.receta] : []);
+      let lista: Receta[] = [];
+      if (categoria === 'desayuno') lista = desayunos as Receta[];
+      if (categoria === 'almuerzo') lista = almuerzos as Receta[];
+      if (categoria === 'cena') lista = cenas as Receta[];
+
+      const pickNRandom = <T,>(arr: T[], n: number): T[] => {
+        if (!Array.isArray(arr) || arr.length === 0) return [] as T[];
+        const copy = [...arr];
+        const out: T[] = [];
+        while (out.length < n && copy.length > 0) {
+          const idx = Math.floor(Math.random() * copy.length);
+          out.push(copy.splice(idx, 1)[0]);
+        }
+        return out;
+      };
+
+      const fetchedArr: Receta[] = pickNRandom(lista, 3);
 
       // Cargar favoritas de la categoría y elegir la favorita del día (rotación diaria)
       const favs = await obtenerFavoritasPorCategoria(categoria);
@@ -305,7 +317,7 @@ export default function NutricionPage() {
       }
 
       setRecetasHoy((prev) => [...prev.filter((r) => r.categoria !== categoria), ...finalList]);
-      setModelosUsados((prev) => ({ ...prev, [categoria]: data.modelo ?? prev[categoria] }));
+      setModelosUsados((prev) => ({ ...prev, [categoria]: 'local' }));
 
       // Guardar en cache local para el resto del día (guardar lo que trajo la IA/fetch)
       await guardarRecetasIA(hoy, categoria, fetchedArr);

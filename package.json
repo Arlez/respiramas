@@ -8,9 +8,17 @@
     "start": "next start",
     "lint": "eslint",
     "generate-icons": "node scripts/generate-icons.js",
-    "generate-icons-sharp": "node scripts/generate-icons-sharp.js"
+    "generate-icons-sharp": "node scripts/generate-icons-sharp.js",
+    "cap:init": "npx cap init Respiramas com.respiramas.app --web-dir out",
+    "cap:sync": "npx cap sync",
+    "cap:open": "npx cap open android",
+    "cap:build": "npm run build & npx cap sync"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/local-notifications": "^8.2.0",
     "next": "16.2.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
