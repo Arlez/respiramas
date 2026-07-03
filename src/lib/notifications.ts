@@ -1,4 +1,4 @@
-import { obtenerRecordatoriosConfig, guardarRecordatorioConfig, obtenerMedicamentos } from './db';
+import { obtenerRecordatoriosConfig, obtenerMedicamentos, eliminarRecordatorioConfig } from './db';
 import {
   solicitarPermisosAlarmas,
   programarAlarmaNativa,
@@ -90,20 +90,12 @@ export async function programarRecordatoriosMedicacion(): Promise<void> {
 
 export async function iniciarRecordatoriosFijos(): Promise<void> {
   try {
-    const configs = await obtenerRecordatoriosConfig();
-    if (!configs || configs.length === 0) {
-      const defaults = [
-        { id: 'ejercicio-manana', titulo: '🫁 Hora de respirar', cuerpo: 'Es momento de tu ejercicio respiratorio matutino', horario: '09:00', tag: 'respiratorio', activo: true },
-        { id: 'ejercicio-tarde', titulo: '🚶 Caminata suave', cuerpo: 'Hora de tu caminata por intervalos', horario: '17:00', tag: 'ejercicio', activo: true },
-        { id: 'registro-noche', titulo: '📊 Registro diario', cuerpo: '¿Ya registraste tu peso, presión y cómo te sientes?', horario: '20:00', tag: 'registro', activo: true },
-      ];
-      for (const d of defaults) {
-        try { await guardarRecordatorioConfig(d as any); } catch (e) { /* ignore */ }
-      }
-    }
+    await limpiarDefaultsAntiguos();
 
-    const finalConfigs = await obtenerRecordatoriosConfig();
-    finalConfigs.forEach((c: any) => {
+    const configs = await obtenerRecordatoriosConfig();
+    if (!configs || configs.length === 0) return;
+
+    configs.forEach((c: any) => {
       if (c.activo) {
         programarRecordatorioDiario(c.id, c.titulo, c.cuerpo, c.horario, c.tag ?? 'general');
       } else {
@@ -117,14 +109,29 @@ export async function iniciarRecordatoriosFijos(): Promise<void> {
       // noop
     }
   } catch (e) {
-    // fallback
-    programarRecordatorioDiario('ejercicio-manana', '🫁 Hora de respirar', 'Es momento de tu ejercicio respiratorio matutino', '09:00', 'respiratorio');
-    programarRecordatorioDiario('ejercicio-tarde', '🚶 Caminata suave', 'Hora de tu caminata por intervalos', '17:00', 'ejercicio');
-    programarRecordatorioDiario('registro-noche', '📊 Registro diario', '¿Ya registraste tu peso, presión y cómo te sientes?', '20:00', 'registro');
-    try {
-      await programarRecordatoriosMedicacion();
-    } catch (ex) {
-      // noop
+    // noop
+  }
+}
+
+const DEFAULTS_LIMPIEZA_KEY = 'respiramas-defaults-limpiados';
+
+async function limpiarDefaultsAntiguos(): Promise<void> {
+  if (typeof window === 'undefined') return;
+  try {
+    if (localStorage.getItem(DEFAULTS_LIMPIEZA_KEY) === 'v1') return;
+
+    const idsAntiguos = ['ejercicio-manana', 'ejercicio-tarde', 'registro-noche'];
+    for (const id of idsAntiguos) {
+      try {
+        await eliminarRecordatorioConfig(id);
+        cancelarRecordatorio(id);
+      } catch (e) {
+        // puede que no exista
+      }
     }
+
+    localStorage.setItem(DEFAULTS_LIMPIEZA_KEY, 'v1');
+  } catch (e) {
+    // noop
   }
 }

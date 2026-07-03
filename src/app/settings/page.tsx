@@ -5,8 +5,9 @@ import Header from '@/components/Header';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { obtenerRecordatoriosConfig, guardarRecordatorioConfig, eliminarRecordatorioConfig } from '@/lib/db';
-import { iniciarRecordatoriosFijos, cancelarRecordatorio, registrarServiceWorker, solicitarPermisoNotificaciones, enviarNotificacionLocal } from '@/lib/notifications';
+import { iniciarRecordatoriosFijos, cancelarRecordatorio, solicitarPermisoNotificaciones } from '@/lib/notifications';
 import { pacientesApi, recordatoriosApi, getPacienteId } from '@/lib/api';
+import { esPlataformaCapacitor } from '@/services/alarmService';
 import type { PacienteInfo } from '@/lib/api';
 
 type RecConfig = { id: string; titulo: string; cuerpo: string; horario: string; activo: boolean };
@@ -19,9 +20,7 @@ export default function SettingsPage() {
   const [newCuerpo, setNewCuerpo] = useState('Hora de tu caminata por intervalos');
   const [darkMode, setDarkMode] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
-  const [notifStatus, setNotifStatus] = useState<string>(() =>
-    typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported'
-  );
+  const [notifStatus, setNotifStatus] = useState<string>('default');
   const [notifBusy, setNotifBusy] = useState(false);
   const [paciente, setPaciente] = useState<PacienteInfo | null>(null);
   const [pNombre, setPNombre] = useState('');
@@ -75,7 +74,7 @@ export default function SettingsPage() {
   const toggleRec = async (it: RecConfig) => { const pid = getPacienteId(); if (pid) { try { await recordatoriosApi.toggle(it.id); loadRecs(); return; } catch {} } const u = { ...it, activo: !it.activo }; await guardarRecordatorioConfig(u as any); if (!u.activo) cancelarRecordatorio(u.id); await iniciarRecordatoriosFijos(); loadRecs(); };
   const removeRec = async (id: string) => { const pid = getPacienteId(); if (pid) { try { await recordatoriosApi.delete(id); loadRecs(); return; } catch {} } await eliminarRecordatorioConfig(id); cancelarRecordatorio(id); await iniciarRecordatoriosFijos(); loadRecs(); };
   const addRec = async () => { if (!newTitulo.trim()) return; const pid = getPacienteId(); if (pid) { try { await recordatoriosApi.create({ pacienteId: pid, titulo: newTitulo, cuerpo: newCuerpo, horario: newHorario }); setNewTitulo('Caminata suave'); setNewCuerpo('Hora de tu caminata por intervalos'); setNewHorario('17:00'); setAddOpen(false); loadRecs(); return; } catch {} } const id = 'rec-' + Date.now(); await guardarRecordatorioConfig({ id, titulo: newTitulo, cuerpo: newCuerpo, horario: newHorario, activo: true } as any); await iniciarRecordatoriosFijos(); setNewTitulo('Caminata suave'); setNewCuerpo('Hora de tu caminata por intervalos'); setNewHorario('17:00'); setAddOpen(false); loadRecs(); };
-  const activarNotif = async () => { if (typeof window === 'undefined') return; setNotifBusy(true); try { await registrarServiceWorker(); const g = await solicitarPermisoNotificaciones(); setNotifStatus(g ? 'granted' : Notification.permission ?? 'default'); if (g) { await iniciarRecordatoriosFijos(); } } finally { setNotifBusy(false); } };
+  const activarNotif = async () => { setNotifBusy(true); try { const g = await solicitarPermisoNotificaciones(); setNotifStatus(g ? 'granted' : 'denied'); if (g) { await iniciarRecordatoriosFijos(); } } finally { setNotifBusy(false); } };
 
   const inp = 'w-full rounded-xl border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-green-400';
 
@@ -134,11 +133,19 @@ export default function SettingsPage() {
         </Card>
 
         <Card icon="" title="Notificaciones" color="white">
-          <p className="text-gray-600 dark:text-gray-400 mb-3">Permiso: <span className="font-semibold text-gray-800 dark:text-gray-200">{notifStatus}</span></p>
-          <div className="flex gap-3">
-            <Button variant="primary" size="md" onClick={activarNotif} disabled={notifBusy} className="flex-1">{notifBusy ? 'Procesando...' : 'Activar'}</Button>
-            <Button variant="ghost" size="md" onClick={() => { if (typeof window !== 'undefined' && 'Notification' in window) setNotifStatus(Notification.permission); }}>Actualizar</Button>
-          </div>
+          {esPlataformaCapacitor() ? (
+            <>
+              <p className="text-gray-600 dark:text-gray-400 mb-3">Permiso: <span className="font-semibold text-gray-800 dark:text-gray-200">{notifStatus}</span></p>
+              <div className="flex gap-3">
+                <Button variant="primary" size="md" onClick={activarNotif} disabled={notifBusy} className="flex-1">{notifBusy ? 'Procesando...' : 'Activar'}</Button>
+                <Button variant="ghost" size="md" onClick={async () => { const g = await solicitarPermisoNotificaciones(); setNotifStatus(g ? 'granted' : 'denied'); }}>Actualizar</Button>
+              </div>
+            </>
+          ) : (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3 text-sm text-blue-700 dark:text-blue-300">
+              Las notificaciones nativas solo estan disponibles en la aplicacion Android. Instala el APK para recibir alarmas incluso con la app cerrada.
+            </div>
+          )}
         </Card>
 
         <Card icon="" title="Recordatorios" color="white">
